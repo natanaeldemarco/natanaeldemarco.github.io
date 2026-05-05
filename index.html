@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Natanael · Data Analyst & Automation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Fira+Code:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #080c10;
+      --bg2: #0d1117;
+      --surface: #131820;
+      --border: #1e2730;
+      --accent: #00e5a0;
+      --accent2: #0099ff;
+      --accent-dim: rgba(0, 229, 160, 0.12);
+      --text: #e8edf2;
+      --muted: #6b7a8d;
+      --font-head: 'Syne', sans-serif;
+      --font-mono: 'Fira Code', monospace;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: 14px;
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    /* ── NOISE OVERLAY ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.4;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.2rem 4rem;
+      border-bottom: 1px solid var(--border);
+      background: rgba(8, 12, 16, 0.85);
+      backdrop-filter: blur(12px);
+    }
+
+    .nav-logo {
+      font-family: var(--font-head);
+      font-weight: 800;
+      font-size: 1.1rem;
+      letter-spacing: -0.02em;
+      color: var(--text);
+    }
+
+    .nav-logo span { color: var(--accent); }
+
+    .nav-links {
+      display: flex;
+      gap: 2.5rem;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.78rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: var(--accent); }
+
+    /* ── HERO ── */
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 8rem 4rem 4rem;
+      overflow: hidden;
+    }
+
+    .hero-grid-bg {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,229,160,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,229,160,0.04) 1px, transparent 1px);
+      background-size: 60px 60px;
+      mask-image: radial-gradient(ellipse 80% 60% at 50% 50%, black 40%, transparent 100%);
+    }
+
+    .hero-glow {
+      position: absolute;
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(0,229,160,0.08) 0%, transparent 70%);
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+
+    .hero-tag {
+      font-size: 0.72rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      animation: fadeUp 0.8s ease both;
+    }
+
+    .hero-tag::before {
+      content: '';
+      display: block;
+      width: 32px; height: 1px;
+      background: var(--accent);
+    }
+
+    .hero h1 {
+      font-family: var(--font-head);
+      font-size: clamp(3rem, 7vw, 6rem);
+      font-weight: 800;
+      line-height: 1.0;
+      letter-spacing: -0.04em;
+      max-width: 800px;
+      animation: fadeUp 0.8s 0.1s ease both;
+    }
+
+    .hero h1 em {
+      font-style: normal;
+      color: var(--accent);
+    }
+
+    .hero-sub {
+      margin-top: 1.8rem;
+      color: var(--muted);
+      max-width: 480px;
+      font-size: 0.88rem;
+      line-height: 1.8;
+      animation: fadeUp 0.8s 0.2s ease both;
+    }
+
+    .hero-cta {
+      margin-top: 3rem;
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      animation: fadeUp 0.8s 0.3s ease both;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.85rem 1.8rem;
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      text-decoration: none;
+      transition: all 0.2s;
+      cursor: pointer;
+      border: none;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #000;
+      font-weight: 500;
+    }
+
+    .btn-primary:hover {
+      background: #fff;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(0,229,160,0.25);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-ghost:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      transform: translateY(-2px);
+    }
+
+    /* STATS BAR */
+    .stats-bar {
+      margin-top: 5rem;
+      display: flex;
+      gap: 3rem;
+      flex-wrap: wrap;
+      border-top: 1px solid var(--border);
+      padding-top: 2rem;
+      animation: fadeUp 0.8s 0.4s ease both;
+    }
+
+    .stat { display: flex; flex-direction: column; gap: 0.3rem; }
+
+    .stat-num {
+      font-family: var(--font-head);
+      font-size: 2.2rem;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      color: var(--text);
+    }
+
+    .stat-num span { color: var(--accent); }
+
+    .stat-label {
+      font-size: 0.7rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    /* ── SECTION BASE ── */
+    section {
+      padding: 6rem 4rem;
+      position: relative;
+    }
+
+    .section-tag {
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+    }
+
+    .section-tag::before {
+      content: '';
+      display: block;
+      width: 20px; height: 1px;
+      background: var(--accent);
+    }
+
+    .section-title {
+      font-family: var(--font-head);
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      margin-bottom: 1rem;
+      line-height: 1.1;
+    }
+
+    .section-sub {
+      color: var(--muted);
+      max-width: 500px;
+      font-size: 0.85rem;
+      margin-bottom: 3.5rem;
+    }
+
+    /* ── SERVICES ── */
+    #servicios { background: var(--bg2); }
+
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5px;
+      background: var(--border);
+      border: 1px solid var(--border);
+    }
+
+    .service-card {
+      background: var(--surface);
+      padding: 2.5rem;
+      position: relative;
+      overflow: hidden;
+      transition: background 0.3s;
+    }
+
+    .service-card:hover { background: #161e28; }
+
+    .service-card::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.3s;
+    }
+
+    .service-card:hover::after { transform: scaleX(1); }
+
+    .service-icon {
+      width: 40px; height: 40px;
+      border-radius: 6px;
+      background: var(--accent-dim);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .service-name {
+      font-family: var(--font-head);
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 0.6rem;
+    }
+
+    .service-desc {
+      color: var(--muted);
+      font-size: 0.82rem;
+      margin-bottom: 1.5rem;
+      line-height: 1.8;
+    }
+
+    .service-price {
+      font-family: var(--font-head);
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: var(--accent);
+    }
+
+    .service-price span {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--muted);
+      font-weight: 400;
+    }
+
+    .service-features {
+      margin-top: 1.2rem;
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .service-features li {
+      font-size: 0.78rem;
+      color: var(--muted);
+      display: flex;
+      gap: 0.6rem;
+    }
+
+    .service-features li::before {
+      content: '→';
+      color: var(--accent);
+      flex-shrink: 0;
+    }
+
+    /* ── STACK ── */
+    #stack { background: var(--bg); }
+
+    .skills-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.8rem;
+    }
+
+    .skill-pill {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.55rem 1.1rem;
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      font-size: 0.78rem;
+      color: var(--muted);
+      transition: all 0.2s;
+      background: var(--surface);
+    }
+
+    .skill-pill:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-dim);
+    }
+
+    .skill-pill .dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      opacity: 0.6;
+    }
+
+    /* ── PROYECTOS ── */
+    #proyectos { background: var(--bg2); }
+
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+    }
+
+    .project-card {
+      background: var(--surface);
+      padding: 2rem 2.5rem;
+      position: relative;
+      overflow: hidden;
+      transition: background 0.3s;
+    }
+
+    .project-card:hover { background: #161e28; }
+
+    .project-label {
+      font-size: 0.68rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.8rem;
+    }
+
+    .project-title {
+      font-family: var(--font-head);
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 0.7rem;
+    }
+
+    .project-desc {
+      color: var(--muted);
+      font-size: 0.8rem;
+      line-height: 1.8;
+      margin-bottom: 1.5rem;
+    }
+
+    .project-tags {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .project-tag {
+      font-size: 0.68rem;
+      padding: 0.25rem 0.6rem;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      border-radius: 2px;
+    }
+
+    /* CHART DECORATION */
+    .chart-deco {
+      position: absolute;
+      right: 1.5rem;
+      bottom: 1.5rem;
+      display: flex;
+      gap: 4px;
+      align-items: flex-end;
+      opacity: 0.15;
+    }
+
+    .chart-deco div {
+      width: 8px;
+      background: var(--accent);
+      border-radius: 1px;
+    }
+
+    /* ── PROCESO ── */
+    #proceso { background: var(--bg); }
+
+    .process-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      max-width: 700px;
+      border: 1px solid var(--border);
+    }
+
+    .process-item {
+      display: flex;
+      gap: 2rem;
+      padding: 1.8rem 2rem;
+      border-bottom: 1px solid var(--border);
+      transition: background 0.2s;
+    }
+
+    .process-item:last-child { border-bottom: none; }
+    .process-item:hover { background: var(--surface); }
+
+    .process-num {
+      font-family: var(--font-head);
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: var(--border);
+      line-height: 1;
+      min-width: 50px;
+      transition: color 0.2s;
+    }
+
+    .process-item:hover .process-num { color: var(--accent); }
+
+    .process-body {}
+    .process-title {
+      font-family: var(--font-head);
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-bottom: 0.4rem;
+    }
+
+    .process-desc {
+      font-size: 0.8rem;
+      color: var(--muted);
+      line-height: 1.8;
+    }
+
+    /* ── CONTACTO ── */
+    #contacto {
+      background: var(--bg2);
+      text-align: center;
+      padding: 7rem 4rem;
+    }
+
+    .contact-box {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .contact-email {
+      display: inline-block;
+      margin-top: 2rem;
+      font-family: var(--font-head);
+      font-size: clamp(1.3rem, 3vw, 2rem);
+      font-weight: 800;
+      color: var(--accent);
+      text-decoration: none;
+      border-bottom: 2px solid transparent;
+      transition: border-color 0.2s;
+    }
+
+    .contact-email:hover { border-color: var(--accent); }
+
+    .social-links {
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      margin-top: 2.5rem;
+    }
+
+    .social-link {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.75rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      transition: color 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .social-link:hover { color: var(--accent); }
+
+    /* ── FOOTER ── */
+    footer {
+      padding: 1.5rem 4rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.7rem;
+      color: var(--muted);
+    }
+
+    /* ── TERMINAL BADGE ── */
+    .terminal-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.4rem 0.9rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-bottom: 2rem;
+    }
+
+    .terminal-badge .prompt { color: var(--accent); }
+
+    /* ── CURSOR ── */
+    .blink {
+      display: inline-block;
+      width: 2px; height: 1em;
+      background: var(--accent);
+      margin-left: 2px;
+      vertical-align: text-bottom;
+      animation: blink 1s step-end infinite;
+    }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0; }
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: none;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      nav { padding: 1rem 1.5rem; }
+      .nav-links { display: none; }
+      .hero, section { padding-left: 1.5rem; padding-right: 1.5rem; }
+      .stats-bar { gap: 1.5rem; }
+      footer { flex-direction: column; gap: 0.5rem; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-logo">nata<span>.</span>dev</div>
+    <ul class="nav-links">
+      <li><a href="#servicios">Servicios</a></li>
+      <li><a href="#stack">Stack</a></li>
+      <li><a href="#proyectos">Proyectos</a></li>
+      <li><a href="#proceso">Proceso</a></li>
+      <li><a href="#contacto">Contacto</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-grid-bg"></div>
+    <div class="hero-glow"></div>
+
+    <div class="terminal-badge">
+      <span class="prompt">$</span> status --disponible
+    </div>
+
+    <div class="hero-tag">Data Analyst & Automation Specialist</div>
+
+    <h1>Tus datos<br/><em>trabajando</em><br/>para vos.</h1>
+
+    <p class="hero-sub">
+      Transformo datos en dashboards accionables, automatizo reportes
+      manuales y construyo sistemas de métricas que ayudan a PYMEs
+      a tomar mejores decisiones, más rápido.
+    </p>
+
+    <div class="hero-cta">
+      <a href="#contacto" class="btn btn-primary">Hablemos →</a>
+      <a href="#proyectos" class="btn btn-ghost">Ver proyectos</a>
+    </div>
+
+    <div class="stats-bar">
+      <div class="stat">
+        <div class="stat-num">6<span>+</span></div>
+        <div class="stat-label">Años de experiencia</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">20<span>+</span></div>
+        <div class="stat-label">Dashboards entregados</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">80<span>%</span></div>
+        <div class="stat-label">Reducción de tiempo en reportes</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">3<span>días</span></div>
+        <div class="stat-label">Tiempo promedio de entrega</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SERVICIOS -->
+  <section id="servicios">
+    <div class="section-tag">Servicios</div>
+    <h2 class="section-title reveal">Lo que puedo<br/>hacer por tu negocio</h2>
+    <p class="section-sub reveal">Soluciones concretas, sin costo fijo mensual innecesario. Pagás por lo que necesitás.</p>
+
+    <div class="services-grid reveal">
+
+      <div class="service-card">
+        <div class="service-icon">📊</div>
+        <div class="service-name">Dashboard Profesional</div>
+        <p class="service-desc">
+          Un panel interactivo hecho a medida en Power BI o Google Sheets
+          que te muestra lo que importa, en tiempo real.
+        </p>
+        <div class="service-price">$150 – $250 <span>USD / proyecto</span></div>
+        <ul class="service-features">
+          <li>Conexión a tus fuentes de datos</li>
+          <li>Diseño adaptado a tu marca</li>
+          <li>Entrega en 3–5 días hábiles</li>
+          <li>Capacitación incluida</li>
+        </ul>
+      </div>
+
+      <div class="service-card">
+        <div class="service-icon">⚡</div>
+        <div class="service-name">Automatización de Reportes</div>
+        <p class="service-desc">
+          Convertí horas de trabajo manual en un proceso que corre solo.
+          Reportes automáticos que se actualizan solos cada día.
+        </p>
+        <div class="service-price">$200 – $400 <span>USD / proyecto</span></div>
+        <ul class="service-features">
+          <li>Automatización con Power Query / Apps Script</li>
+          <li>Alertas automáticas por email</li>
+          <li>Eliminación de errores manuales</li>
+          <li>Documentación completa</li>
+        </ul>
+      </div>
+
+      <div class="service-card">
+        <div class="service-icon">🔄</div>
+        <div class="service-name">Soporte Mensual</div>
+        <p class="service-desc">
+          Mantenimiento y evolución de tus dashboards y reportes.
+          Tu analista de datos, sin contratar en blanco.
+        </p>
+        <div class="service-price">$150 – $300 <span>USD / mes</span></div>
+        <ul class="service-features">
+          <li>Actualizaciones y nuevas métricas</li>
+          <li>Soporte vía WhatsApp / Meet</li>
+          <li>Revisión mensual de KPIs</li>
+          <li>Prioridad en nuevos proyectos</li>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- STACK -->
+  <section id="stack">
+    <div class="section-tag">Tecnología</div>
+    <h2 class="section-title reveal">Herramientas<br/>que domino</h2>
+    <p class="section-sub reveal">Stack probado en entornos empresariales reales, no solo cursos.</p>
+
+    <div class="skills-grid reveal">
+      <div class="skill-pill"><span class="dot"></span> Power BI</div>
+      <div class="skill-pill"><span class="dot"></span> Power Query</div>
+      <div class="skill-pill"><span class="dot"></span> Excel Avanzado</div>
+      <div class="skill-pill"><span class="dot"></span> Google Sheets</div>
+      <div class="skill-pill"><span class="dot"></span> Apps Script</div>
+      <div class="skill-pill"><span class="dot"></span> DAX</div>
+      <div class="skill-pill"><span class="dot"></span> M Language</div>
+      <div class="skill-pill"><span class="dot"></span> KPI Design</div>
+      <div class="skill-pill"><span class="dot"></span> SQL básico</div>
+      <div class="skill-pill"><span class="dot"></span> Looker Studio</div>
+      <div class="skill-pill"><span class="dot"></span> Análisis de Calidad</div>
+      <div class="skill-pill"><span class="dot"></span> Procesos Logísticos</div>
+      <div class="skill-pill"><span class="dot"></span> Customer Experience</div>
+      <div class="skill-pill"><span class="dot"></span> Invgate</div>
+    </div>
+  </section>
+
+  <!-- PROYECTOS -->
+  <section id="proyectos">
+    <div class="section-tag">Proyectos</div>
+    <h2 class="section-title reveal">Casos de uso<br/>reales</h2>
+    <p class="section-sub reveal">Ejemplos del tipo de trabajo que entrego. Los datos están anonimizados.</p>
+
+    <div class="projects-grid reveal">
+
+      <div class="project-card">
+        <div class="project-label">Retail · Dashboard</div>
+        <div class="project-title">Control de Ventas y Stock</div>
+        <p class="project-desc">
+          Dashboard en Power BI para cadena de retail con 5 sucursales.
+          Visualización de ventas diarias, rotación de stock y alertas
+          de quiebre de inventario en tiempo real.
+        </p>
+        <div class="project-tags">
+          <span class="project-tag">Power BI</span>
+          <span class="project-tag">DAX</span>
+          <span class="project-tag">Excel</span>
+        </div>
+        <div class="chart-deco">
+          <div style="height:20px"></div>
+          <div style="height:35px"></div>
+          <div style="height:28px"></div>
+          <div style="height:45px"></div>
+          <div style="height:38px"></div>
+          <div style="height:55px"></div>
+        </div>
+      </div>
+
+      <div class="project-card">
+        <div class="project-label">Logística · Automatización</div>
+        <div class="project-title">Reporte Diario de Entregas</div>
+        <p class="project-desc">
+          Automatización de reporte de estado de envíos que antes tomaba
+          2 horas manuales. Ahora se genera solo en 3 minutos con
+          alertas automáticas para el equipo operativo.
+        </p>
+        <div class="project-tags">
+          <span class="project-tag">Power Query</span>
+          <span class="project-tag">Excel</span>
+          <span class="project-tag">Outlook</span>
+        </div>
+        <div class="chart-deco">
+          <div style="height:30px"></div>
+          <div style="height:25px"></div>
+          <div style="height:45px"></div>
+          <div style="height:20px"></div>
+          <div style="height:50px"></div>
+          <div style="height:40px"></div>
+        </div>
+      </div>
+
+      <div class="project-card">
+        <div class="project-label">Servicios · KPIs</div>
+        <div class="project-title">Dashboard de Calidad y NPS</div>
+        <p class="project-desc">
+          Sistema de seguimiento de indicadores de calidad y satisfacción
+          del cliente. Métricas de NPS, tiempos de respuesta y evolución
+          mensual para equipo de Customer Experience.
+        </p>
+        <div class="project-tags">
+          <span class="project-tag">Google Sheets</span>
+          <span class="project-tag">Looker Studio</span>
+          <span class="project-tag">Apps Script</span>
+        </div>
+        <div class="chart-deco">
+          <div style="height:40px"></div>
+          <div style="height:50px"></div>
+          <div style="height:35px"></div>
+          <div style="height:55px"></div>
+          <div style="height:45px"></div>
+          <div style="height:60px"></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- PROCESO -->
+  <section id="proceso">
+    <div class="section-tag">Cómo trabajo</div>
+    <h2 class="section-title reveal">Simple, claro<br/>y sin sorpresas</h2>
+    <p class="section-sub reveal">Un proceso de 4 pasos pensado para que vos no tengas que preocuparte por nada técnico.</p>
+
+    <div class="process-list reveal">
+
+      <div class="process-item">
+        <div class="process-num">01</div>
+        <div class="process-body">
+          <div class="process-title">Diagnóstico gratuito</div>
+          <p class="process-desc">Hablamos 30 minutos. Me contás el problema, yo te digo si puedo resolverlo y cómo. Sin compromiso.</p>
+        </div>
+      </div>
+
+      <div class="process-item">
+        <div class="process-num">02</div>
+        <div class="process-body">
+          <div class="process-title">Propuesta clara</div>
+          <p class="process-desc">Entregás el precio fijo, el alcance exacto y el plazo de entrega. Sin letras chicas ni costos ocultos.</p>
+        </div>
+      </div>
+
+      <div class="process-item">
+        <div class="process-num">03</div>
+        <div class="process-body">
+          <div class="process-title">Desarrollo con feedback</div>
+          <p class="process-desc">Trabajo con actualizaciones intermedias para que puedas ver el avance y pedir ajustes antes de la entrega final.</p>
+        </div>
+      </div>
+
+      <div class="process-item">
+        <div class="process-num">04</div>
+        <div class="process-body">
+          <div class="process-title">Entrega + capacitación</div>
+          <p class="process-desc">Te entrego todo funcionando y te enseño a usarlo. No necesitás depender de mí para el día a día.</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- CONTACTO -->
+  <section id="contacto">
+    <div class="contact-box">
+      <div class="section-tag" style="justify-content:center">Contacto</div>
+      <h2 class="section-title reveal">¿Tu negocio necesita<br/>mejores datos?</h2>
+      <p class="section-sub reveal" style="margin:1rem auto 0">
+        Empezamos con una charla de 30 minutos sin costo. Si no encuentro
+        la forma de ayudarte, te lo digo directamente.
+      </p>
+
+      <a href="mailto:natanaeljon@gmail.com" class="contact-email reveal">natanaeljon@gmail.com</a>
+
+      <div class="social-links reveal">
+        <a href="https://www.linkedin.com/in/natanaeldemarco" target="_blank" class="social-link">↗ LinkedIn</a>
+        <a href="https://wa.me/541169133684" target="_blank" class="social-link">↗ WhatsApp</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <span>© 2025 Natanael · Data & Automation</span>
+    <span>Buenos Aires, Argentina 🇦🇷</span>
+  </footer>
+
+  <script>
+    // Scroll reveal
+    const reveals = document.querySelectorAll('.reveal');
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach((e, i) => {
+        if (e.isIntersecting) {
+          setTimeout(() => e.target.classList.add('visible'), i * 80);
+          obs.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.1 });
+    reveals.forEach(el => obs.observe(el));
+
+    // Stat counter animation
+    function animateCount(el, target, suffix) {
+      let count = 0;
+      const step = Math.ceil(target / 40);
+      const interval = setInterval(() => {
+        count = Math.min(count + step, target);
+        el.textContent = count + suffix;
+        if (count >= target) clearInterval(interval);
+      }, 30);
+    }
+
+    const statsObs = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) {
+        document.querySelectorAll('.stat-num').forEach(el => {
+          const text = el.textContent;
+          const num = parseInt(text);
+          const suffix = text.replace(/[0-9]/g, '');
+          el.innerHTML = '0' + suffix.replace(/([^<]*)(<span>.*<\/span>)/, '$2');
+          animateCount(el.firstChild || el, num, '');
+        });
+        statsObs.disconnect();
+      }
+    }, { threshold: 0.5 });
+
+    const statsBar = document.querySelector('.stats-bar');
+    if (statsBar) statsObs.observe(statsBar);
+  </script>
+
+</body>
+</html>
