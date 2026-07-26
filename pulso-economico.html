@@ -7,16 +7,14 @@
 <meta name="description" content="Panel de indicadores macroeconómicos de Argentina: inflación, tipo de cambio, riesgo país y reservas. Proyecto de portfolio — React + Recharts." />
 
 <!-- React 18 -->
-<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-<script src="https://unpkg.com/react-is@18/umd/react-is.production.min.js" crossorigin></script>
-<script src="https://unpkg.com/prop-types/prop-types.min.js" crossorigin></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js" crossorigin></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-is/18.3.1/umd/react-is.production.min.js" crossorigin></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prop-types/15.8.1/prop-types.min.js" crossorigin></script>
 
 <!-- Recharts (depende de React/React-DOM/react-is/prop-types de arriba) -->
-<script src="https://unpkg.com/recharts/umd/Recharts.min.js" crossorigin></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/recharts/3.8.1/Recharts.min.js" crossorigin></script>
 
-<!-- Babel standalone: permite escribir JSX directo en el navegador, sin paso de build -->
-<script src="https://unpkg.com/@babel/standalone/babel.min.js" crossorigin></script>
 
 <style>
   html, body { margin: 0; padding: 0; background: #0B1B28; }
@@ -26,11 +24,27 @@
 <body>
 <div id="root"></div>
 
-<script type="text/babel" data-presets="react">
-const { useState, useEffect, useMemo, useRef } = React;
+<script>
 const {
-  ComposedChart, Bar, Line, Area, AreaChart, LineChart, BarChart,
-  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell,
+  useState,
+  useEffect,
+  useMemo,
+  useRef
+} = React;
+const {
+  ComposedChart,
+  Bar,
+  Line,
+  Area,
+  AreaChart,
+  LineChart,
+  BarChart,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Cell
 } = Recharts;
 
 /* ============================================================
@@ -52,16 +66,14 @@ const C = {
   coral: "#E2604B",
   coralSoft: "rgba(226,96,75,0.16)",
   steel: "#6FA8C7",
-  steelSoft: "rgba(111,168,199,0.16)",
+  steelSoft: "rgba(111,168,199,0.16)"
 };
-
 const FONTS = `
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 `;
-
 const GLOBAL_CSS = `
   * { box-sizing: border-box; }
-  .font-display { font-family: 'Fraunces', serif; }
+  .font-display { font-family: 'Syne', sans-serif; }
   .font-ui { font-family: 'Space Grotesk', sans-serif; }
   .font-mono { font-family: 'IBM Plex Mono', monospace; }
 
@@ -109,53 +121,199 @@ const GLOBAL_CSS = `
    Los valores de jul-25 a jun-26 anclan en cifras oficiales
    publicadas; los meses intermedios son estimaciones de tendencia.
    ============================================================ */
-const monthlyData = [
-  { month: "Ene 25", year: 2025, ipc: 2.2, oficial: 1050, blue: 1150, reservas: 28500, riesgo: 650 },
-  { month: "Feb 25", year: 2025, ipc: 2.4, oficial: 1070, blue: 1170, reservas: 28800, riesgo: 700 },
-  { month: "Mar 25", year: 2025, ipc: 3.7, oficial: 1096, blue: 1225, reservas: 29000, riesgo: 750 },
-  { month: "Abr 25", year: 2025, ipc: 2.8, oficial: 1150, blue: 1280, reservas: 30500, riesgo: 720 },
-  { month: "May 25", year: 2025, ipc: 1.5, oficial: 1180, blue: 1300, reservas: 32000, riesgo: 680 },
-  { month: "Jun 25", year: 2025, ipc: 1.6, oficial: 1210, blue: 1320, reservas: 33500, riesgo: 640 },
-  { month: "Jul 25", year: 2025, ipc: 1.9, oficial: 1240, blue: 1350, reservas: 35000, riesgo: 600 },
-  { month: "Ago 25", year: 2025, ipc: 1.9, oficial: 1270, blue: 1380, reservas: 36500, riesgo: 560 },
-  { month: "Sep 25", year: 2025, ipc: 2.1, oficial: 1300, blue: 1400, reservas: 38000, riesgo: 520 },
-  { month: "Oct 25", year: 2025, ipc: 2.3, oficial: 1330, blue: 1420, reservas: 40000, riesgo: 490 },
-  { month: "Nov 25", year: 2025, ipc: 2.4, oficial: 1360, blue: 1440, reservas: 42000, riesgo: 460 },
-  { month: "Dic 25", year: 2025, ipc: 2.8, oficial: 1390, blue: 1460, reservas: 44000, riesgo: 430 },
-  { month: "Ene 26", year: 2026, ipc: 2.2, oficial: 1400, blue: 1480, reservas: 45000, riesgo: 420 },
-  { month: "Feb 26", year: 2026, ipc: 2.0, oficial: 1400, blue: 1420, reservas: 46261, riesgo: 415 },
-  { month: "Mar 26", year: 2026, ipc: 3.4, oficial: 1428, blue: 1415, reservas: 47100, riesgo: 410 },
-  { month: "Abr 26", year: 2026, ipc: 2.6, oficial: 1460, blue: 1470, reservas: 47600, riesgo: 415 },
-  { month: "May 26", year: 2026, ipc: 2.1, oficial: 1490, blue: 1500, reservas: 48200, riesgo: 412 },
-  { month: "Jun 26", year: 2026, ipc: 1.89, oficial: 1500, blue: 1530, reservas: 48800, riesgo: 416 },
-  { month: "Jul 26", year: 2026, ipc: null, oficial: 1520, blue: 1547, reservas: 49183, riesgo: 410 },
-];
-
+const monthlyData = [{
+  month: "Ene 25",
+  year: 2025,
+  ipc: 2.2,
+  oficial: 1050,
+  blue: 1150,
+  reservas: 28500,
+  riesgo: 650
+}, {
+  month: "Feb 25",
+  year: 2025,
+  ipc: 2.4,
+  oficial: 1070,
+  blue: 1170,
+  reservas: 28800,
+  riesgo: 700
+}, {
+  month: "Mar 25",
+  year: 2025,
+  ipc: 3.7,
+  oficial: 1096,
+  blue: 1225,
+  reservas: 29000,
+  riesgo: 750
+}, {
+  month: "Abr 25",
+  year: 2025,
+  ipc: 2.8,
+  oficial: 1150,
+  blue: 1280,
+  reservas: 30500,
+  riesgo: 720
+}, {
+  month: "May 25",
+  year: 2025,
+  ipc: 1.5,
+  oficial: 1180,
+  blue: 1300,
+  reservas: 32000,
+  riesgo: 680
+}, {
+  month: "Jun 25",
+  year: 2025,
+  ipc: 1.6,
+  oficial: 1210,
+  blue: 1320,
+  reservas: 33500,
+  riesgo: 640
+}, {
+  month: "Jul 25",
+  year: 2025,
+  ipc: 1.9,
+  oficial: 1240,
+  blue: 1350,
+  reservas: 35000,
+  riesgo: 600
+}, {
+  month: "Ago 25",
+  year: 2025,
+  ipc: 1.9,
+  oficial: 1270,
+  blue: 1380,
+  reservas: 36500,
+  riesgo: 560
+}, {
+  month: "Sep 25",
+  year: 2025,
+  ipc: 2.1,
+  oficial: 1300,
+  blue: 1400,
+  reservas: 38000,
+  riesgo: 520
+}, {
+  month: "Oct 25",
+  year: 2025,
+  ipc: 2.3,
+  oficial: 1330,
+  blue: 1420,
+  reservas: 40000,
+  riesgo: 490
+}, {
+  month: "Nov 25",
+  year: 2025,
+  ipc: 2.4,
+  oficial: 1360,
+  blue: 1440,
+  reservas: 42000,
+  riesgo: 460
+}, {
+  month: "Dic 25",
+  year: 2025,
+  ipc: 2.8,
+  oficial: 1390,
+  blue: 1460,
+  reservas: 44000,
+  riesgo: 430
+}, {
+  month: "Ene 26",
+  year: 2026,
+  ipc: 2.2,
+  oficial: 1400,
+  blue: 1480,
+  reservas: 45000,
+  riesgo: 420
+}, {
+  month: "Feb 26",
+  year: 2026,
+  ipc: 2.0,
+  oficial: 1400,
+  blue: 1420,
+  reservas: 46261,
+  riesgo: 415
+}, {
+  month: "Mar 26",
+  year: 2026,
+  ipc: 3.4,
+  oficial: 1428,
+  blue: 1415,
+  reservas: 47100,
+  riesgo: 410
+}, {
+  month: "Abr 26",
+  year: 2026,
+  ipc: 2.6,
+  oficial: 1460,
+  blue: 1470,
+  reservas: 47600,
+  riesgo: 415
+}, {
+  month: "May 26",
+  year: 2026,
+  ipc: 2.1,
+  oficial: 1490,
+  blue: 1500,
+  reservas: 48200,
+  riesgo: 412
+}, {
+  month: "Jun 26",
+  year: 2026,
+  ipc: 1.89,
+  oficial: 1500,
+  blue: 1530,
+  reservas: 48800,
+  riesgo: 416
+}, {
+  month: "Jul 26",
+  year: 2026,
+  ipc: null,
+  oficial: 1520,
+  blue: 1547,
+  reservas: 49183,
+  riesgo: 410
+}];
 const withMovingAvg = (() => {
-  const out = monthlyData.map((d) => ({ ...d }));
+  const out = monthlyData.map(d => ({
+    ...d
+  }));
   for (let i = 0; i < out.length; i++) {
-    const win = out.slice(Math.max(0, i - 2), i + 1).map((d) => d.ipc).filter((v) => v != null);
+    const win = out.slice(Math.max(0, i - 2), i + 1).map(d => d.ipc).filter(v => v != null);
     out[i].ipcMA = win.length === 3 ? +(win.reduce((a, b) => a + b, 0) / win.length).toFixed(2) : null;
   }
   return out;
 })();
-
-const rubrosJun26 = [
-  { rubro: "Recreación y cultura", valor: 4.2 },
-  { rubro: "Transporte", valor: 2.4 },
-  { rubro: "Vivienda, agua y gas", valor: 2.1 },
-  { rubro: "Alimentos y bebidas", valor: 1.8 },
-  { rubro: "Salud", valor: 1.6 },
-  { rubro: "Educación", valor: 1.3 },
-  { rubro: "Indumentaria", valor: 1.1 },
-  { rubro: "Comunicación", valor: 0.9 },
-].sort((a, b) => b.valor - a.valor);
-
+const rubrosJun26 = [{
+  rubro: "Recreación y cultura",
+  valor: 4.2
+}, {
+  rubro: "Transporte",
+  valor: 2.4
+}, {
+  rubro: "Vivienda, agua y gas",
+  valor: 2.1
+}, {
+  rubro: "Alimentos y bebidas",
+  valor: 1.8
+}, {
+  rubro: "Salud",
+  valor: 1.6
+}, {
+  rubro: "Educación",
+  valor: 1.3
+}, {
+  rubro: "Indumentaria",
+  valor: 1.1
+}, {
+  rubro: "Comunicación",
+  valor: 0.9
+}].sort((a, b) => b.valor - a.valor);
 const latest = monthlyData[monthlyData.length - 1];
 const prevMonth = monthlyData[monthlyData.length - 2];
-const lastIpc = monthlyData.filter((d) => d.ipc != null).slice(-1)[0];
-const lastIpcPrev = monthlyData.filter((d) => d.ipc != null).slice(-2, -1)[0];
-const brecha = (((latest.blue - latest.oficial) / latest.oficial) * 100).toFixed(1);
+const lastIpc = monthlyData.filter(d => d.ipc != null).slice(-1)[0];
+const lastIpcPrev = monthlyData.filter(d => d.ipc != null).slice(-2, -1)[0];
+const brecha = ((latest.blue - latest.oficial) / latest.oficial * 100).toFixed(1);
 
 /* ============================================================
    HOOKS
@@ -169,12 +327,15 @@ function usePrefersReducedMotion() {
   }, []);
   return reduced;
 }
-
-function useCountUp(target, { decimals = 0, duration = 1100, prefix = "", suffix = "" } = {}) {
+function useCountUp(target, {
+  decimals = 0,
+  duration = 1100,
+  prefix = "",
+  suffix = ""
+} = {}) {
   const [display, setDisplay] = useState(0);
   const reduced = usePrefersReducedMotion();
   const raf = useRef(null);
-
   useEffect(() => {
     if (target == null) return;
     if (reduced) {
@@ -182,8 +343,8 @@ function useCountUp(target, { decimals = 0, duration = 1100, prefix = "", suffix
       return;
     }
     const start = performance.now();
-    const ease = (t) => 1 - Math.pow(1 - t, 3);
-    const tick = (now) => {
+    const ease = t => 1 - Math.pow(1 - t, 3);
+    const tick = now => {
       const p = Math.min(1, (now - start) / duration);
       setDisplay(target * ease(p));
       if (p < 1) raf.current = requestAnimationFrame(tick);
@@ -191,10 +352,9 @@ function useCountUp(target, { decimals = 0, duration = 1100, prefix = "", suffix
     raf.current = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf.current);
   }, [target, duration, reduced]);
-
   const formatted = display.toLocaleString("es-AR", {
     minimumFractionDigits: decimals,
-    maximumFractionDigits: decimals,
+    maximumFractionDigits: decimals
   });
   return `${prefix}${formatted}${suffix}`;
 }
@@ -202,99 +362,235 @@ function useCountUp(target, { decimals = 0, duration = 1100, prefix = "", suffix
 /* ============================================================
    SMALL COMPONENTS
    ============================================================ */
-function Sparkline({ data, dataKey, color }) {
-  return (
-    <div style={{ width: "100%", height: 40 }}>
-      <ResponsiveContainer>
-        <LineChart data={data} margin={{ top: 4, right: 0, bottom: 0, left: 0 }}>
-          <Line type="monotone" dataKey={dataKey} stroke={color} strokeWidth={2} dot={false}
-                isAnimationActive={true} animationDuration={1000} connectNulls />
-        </LineChart>
-      </ResponsiveContainer>
-    </div>
-  );
+function Sparkline({
+  data,
+  dataKey,
+  color
+}) {
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      width: "100%",
+      height: 40
+    }
+  }, /*#__PURE__*/React.createElement(ResponsiveContainer, null, /*#__PURE__*/React.createElement(LineChart, {
+    data: data,
+    margin: {
+      top: 4,
+      right: 0,
+      bottom: 0,
+      left: 0
+    }
+  }, /*#__PURE__*/React.createElement(Line, {
+    type: "monotone",
+    dataKey: dataKey,
+    stroke: color,
+    strokeWidth: 2,
+    dot: false,
+    isAnimationActive: true,
+    animationDuration: 1000,
+    connectNulls: true
+  }))));
 }
-
-function DeltaTag({ value, unit = "", invertGood = false, decimals = 1 }) {
+function DeltaTag({
+  value,
+  unit = "",
+  invertGood = false,
+  decimals = 1
+}) {
   const isUp = value > 0;
   const isFlat = Math.abs(value) < 0.0001;
   const good = isFlat ? null : invertGood ? !isUp : isUp;
   const color = isFlat ? C.textMuted : good ? C.green : C.coral;
   const arrow = isFlat ? "→" : isUp ? "↑" : "↓";
-  return (
-    <span className="font-mono" style={{ color, fontSize: 13, fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 4 }}>
-      {arrow} {Math.abs(value).toFixed(decimals)}{unit}
-    </span>
-  );
+  return /*#__PURE__*/React.createElement("span", {
+    className: "font-mono",
+    style: {
+      color,
+      fontSize: 13,
+      fontWeight: 600,
+      display: "inline-flex",
+      alignItems: "center",
+      gap: 4
+    }
+  }, arrow, " ", Math.abs(value).toFixed(decimals), unit);
 }
-
-function KpiCard({ label, value, sub, sparkData, sparkKey, sparkColor, delta, deltaUnit, invertGood, decimals }) {
-  return (
-    <div className="kpi-card rise-in" style={{
-      background: C.bgPanel, border: `1px solid ${C.hairline}`, borderRadius: 18,
-      padding: "20px 22px", display: "flex", flexDirection: "column", gap: 10, minWidth: 0,
-    }}>
-      <div className="font-ui" style={{ fontSize: 12, letterSpacing: "0.08em", textTransform: "uppercase", color: C.textMuted }}>{label}</div>
-      <div className="font-mono" style={{ fontSize: 30, fontWeight: 600, color: C.text, lineHeight: 1 }}>{value}</div>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
-        <DeltaTag value={delta} unit={deltaUnit} invertGood={invertGood} decimals={decimals} />
-        <div style={{ width: 72 }}><Sparkline data={sparkData} dataKey={sparkKey} color={sparkColor} /></div>
-      </div>
-      <div className="font-ui" style={{ fontSize: 12, color: C.textFaint }}>{sub}</div>
-    </div>
-  );
+function KpiCard({
+  label,
+  value,
+  sub,
+  sparkData,
+  sparkKey,
+  sparkColor,
+  delta,
+  deltaUnit,
+  invertGood,
+  decimals
+}) {
+  return /*#__PURE__*/React.createElement("div", {
+    className: "kpi-card rise-in",
+    style: {
+      background: C.bgPanel,
+      border: `1px solid ${C.hairline}`,
+      borderRadius: 18,
+      padding: "20px 22px",
+      display: "flex",
+      flexDirection: "column",
+      gap: 10,
+      minWidth: 0
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "font-ui",
+    style: {
+      fontSize: 12,
+      letterSpacing: "0.08em",
+      textTransform: "uppercase",
+      color: C.textMuted
+    }
+  }, label), /*#__PURE__*/React.createElement("div", {
+    className: "font-mono",
+    style: {
+      fontSize: 30,
+      fontWeight: 600,
+      color: C.text,
+      lineHeight: 1
+    }
+  }, value), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: 8
+    }
+  }, /*#__PURE__*/React.createElement(DeltaTag, {
+    value: delta,
+    unit: deltaUnit,
+    invertGood: invertGood,
+    decimals: decimals
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      width: 72
+    }
+  }, /*#__PURE__*/React.createElement(Sparkline, {
+    data: sparkData,
+    dataKey: sparkKey,
+    color: sparkColor
+  }))), /*#__PURE__*/React.createElement("div", {
+    className: "font-ui",
+    style: {
+      fontSize: 12,
+      color: C.textFaint
+    }
+  }, sub));
 }
-
 function TickerTape() {
-  const items = [
-    `IPC MENSUAL (JUN-26) ${lastIpc.ipc.toFixed(2)}%`,
-    `IPC INTERANUAL 33,55%`,
-    `DÓLAR OFICIAL $${latest.oficial.toLocaleString("es-AR")}`,
-    `DÓLAR BLUE $${latest.blue.toLocaleString("es-AR")}`,
-    `BRECHA CAMBIARIA ${brecha}%`,
-    `RIESGO PAÍS ${latest.riesgo} PB`,
-    `RESERVAS BCRA U$S ${latest.reservas.toLocaleString("es-AR")} M`,
-    `SUPERÁVIT COMERCIAL 1ER SEM. U$S 14.000 M`,
-  ];
+  const items = [`IPC MENSUAL (JUN-26) ${lastIpc.ipc.toFixed(2)}%`, `IPC INTERANUAL 33,55%`, `DÓLAR OFICIAL $${latest.oficial.toLocaleString("es-AR")}`, `DÓLAR BLUE $${latest.blue.toLocaleString("es-AR")}`, `BRECHA CAMBIARIA ${brecha}%`, `RIESGO PAÍS ${latest.riesgo} PB`, `RESERVAS BCRA U$S ${latest.reservas.toLocaleString("es-AR")} M`, `SUPERÁVIT COMERCIAL 1ER SEM. U$S 14.000 M`];
   const doubled = [...items, ...items];
-  return (
-    <div className="ticker-wrap" style={{ background: C.bgPanelAlt, borderBottom: `1px solid ${C.hairline}`, overflow: "hidden", padding: "9px 0" }}>
-      <div className="ticker-track" style={{ display: "flex", whiteSpace: "nowrap" }}>
-        {doubled.map((it, i) => (
-          <span key={i} className="font-mono" style={{ fontSize: 12.5, color: C.textMuted, padding: "0 28px", letterSpacing: "0.02em" }}>
-            <span style={{ color: C.gold, marginRight: 10 }}>●</span>{it}
-          </span>
-        ))}
-      </div>
-    </div>
-  );
+  return /*#__PURE__*/React.createElement("div", {
+    className: "ticker-wrap",
+    style: {
+      background: C.bgPanelAlt,
+      borderBottom: `1px solid ${C.hairline}`,
+      overflow: "hidden",
+      padding: "9px 0"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ticker-track",
+    style: {
+      display: "flex",
+      whiteSpace: "nowrap"
+    }
+  }, doubled.map((it, i) => /*#__PURE__*/React.createElement("span", {
+    key: i,
+    className: "font-mono",
+    style: {
+      fontSize: 12.5,
+      color: C.textMuted,
+      padding: "0 28px",
+      letterSpacing: "0.02em"
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: C.gold,
+      marginRight: 10
+    }
+  }, "\u25CF"), it))));
 }
-
-function ChartPanel({ title, source, children, height = 280 }) {
-  return (
-    <div className="rise-in" style={{ background: C.bgPanel, border: `1px solid ${C.hairline}`, borderRadius: 18, padding: "22px 22px 14px" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 14 }}>
-        <h3 className="font-ui" style={{ fontSize: 15, fontWeight: 600, color: C.text, margin: 0 }}>{title}</h3>
-      </div>
-      <div style={{ width: "100%", height }}>{children}</div>
-      <div className="font-ui" style={{ fontSize: 11, color: C.textFaint, marginTop: 10 }}>{source}</div>
-    </div>
-  );
+function ChartPanel({
+  title,
+  source,
+  children,
+  height = 240
+}) {
+  return /*#__PURE__*/React.createElement("div", {
+    className: "rise-in",
+    style: {
+      background: C.bgPanel,
+      border: `1px solid ${C.hairline}`,
+      borderRadius: 18,
+      padding: "22px 22px 14px"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "baseline",
+      marginBottom: 14
+    }
+  }, /*#__PURE__*/React.createElement("h3", {
+    className: "font-ui",
+    style: {
+      fontSize: 15,
+      fontWeight: 600,
+      color: C.text,
+      margin: 0
+    }
+  }, title)), /*#__PURE__*/React.createElement("div", {
+    style: {
+      width: "100%",
+      height
+    }
+  }, children), /*#__PURE__*/React.createElement("div", {
+    className: "font-ui",
+    style: {
+      fontSize: 11,
+      color: C.textFaint,
+      marginTop: 10
+    }
+  }, source));
 }
-
-function CustomTooltip({ active, payload, label, suffixMap = {}, prefixMap = {} }) {
+function CustomTooltip({
+  active,
+  payload,
+  label,
+  suffixMap = {},
+  prefixMap = {}
+}) {
   if (!active || !payload || !payload.length) return null;
-  return (
-    <div style={{ background: "#0A1826", border: `1px solid ${C.hairlineStrong}`, borderRadius: 10, padding: "10px 14px" }}>
-      <div className="font-ui" style={{ fontSize: 11, color: C.textMuted, marginBottom: 6 }}>{label}</div>
-      {payload.map((p, i) => (
-        <div key={i} className="font-mono" style={{ fontSize: 13, color: p.color, display: "flex", gap: 8, justifyContent: "space-between" }}>
-          <span>{p.name}</span>
-          <span>{prefixMap[p.dataKey] || ""}{typeof p.value === "number" ? p.value.toLocaleString("es-AR") : p.value}{suffixMap[p.dataKey] || ""}</span>
-        </div>
-      ))}
-    </div>
-  );
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: "#0A1826",
+      border: `1px solid ${C.hairlineStrong}`,
+      borderRadius: 10,
+      padding: "10px 14px"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "font-ui",
+    style: {
+      fontSize: 11,
+      color: C.textMuted,
+      marginBottom: 6
+    }
+  }, label), payload.map((p, i) => /*#__PURE__*/React.createElement("div", {
+    key: i,
+    className: "font-mono",
+    style: {
+      fontSize: 13,
+      color: p.color,
+      display: "flex",
+      gap: 8,
+      justifyContent: "space-between"
+    }
+  }, /*#__PURE__*/React.createElement("span", null, p.name), /*#__PURE__*/React.createElement("span", null, prefixMap[p.dataKey] || "", typeof p.value === "number" ? p.value.toLocaleString("es-AR") : p.value, suffixMap[p.dataKey] || ""))));
 }
 
 /* ============================================================
@@ -302,184 +598,531 @@ function CustomTooltip({ active, payload, label, suffixMap = {}, prefixMap = {} 
    ============================================================ */
 function PulsoEconomicoArgentino() {
   const [period, setPeriod] = useState("todo");
-
   const filtered = useMemo(() => {
     if (period === "todo") return withMovingAvg;
-    return withMovingAvg.filter((d) => d.year === Number(period));
+    return withMovingAvg.filter(d => d.year === Number(period));
   }, [period]);
-
-  const ipcValue = useCountUp(lastIpc.ipc, { decimals: 2, suffix: "%" });
-  const blueValue = useCountUp(latest.blue, { decimals: 0, prefix: "$" });
-  const riesgoValue = useCountUp(latest.riesgo, { decimals: 0 });
-  const reservasValue = useCountUp(latest.reservas / 1000, { decimals: 2, prefix: "U$S ", suffix: " mM" });
-
-  const periods = [
-    { id: "todo", label: "Todo" },
-    { id: "2025", label: "2025" },
-    { id: "2026", label: "2026" },
-  ];
-
-  return (
-    <div className="font-ui" style={{ minHeight: "100vh", background: C.bg, color: C.text }}>
-      <style>{FONTS + GLOBAL_CSS}</style>
-
-      <TickerTape />
-
-      <header style={{
-        padding: "40px 24px 28px", maxWidth: 1180, margin: "0 auto", borderBottom: `1px solid ${C.hairline}`,
-        backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 27px, ${C.hairline} 28px)`,
-      }}>
-        <div style={{ marginBottom: 18 }}>
-          <a href="./index.html" className="back-link font-ui" style={{ fontSize: 13 }}>← Volver al portfolio</a>
-        </div>
-        <div className="rise-in" style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", gap: 20, alignItems: "flex-end" }}>
-          <div>
-            <div className="font-ui" style={{ fontSize: 12, letterSpacing: "0.14em", color: C.gold, textTransform: "uppercase", marginBottom: 10 }}>
-              Panel macroeconómico · República Argentina
-            </div>
-            <h1 className="font-display" style={{ fontSize: "clamp(32px, 5vw, 52px)", fontWeight: 600, margin: 0, lineHeight: 1.05 }}>
-              Pulso Económico Argentino
-            </h1>
-            <p className="font-ui" style={{ color: C.textMuted, fontSize: 15, marginTop: 12, maxWidth: 520 }}>
-              Inflación, tipo de cambio, riesgo país y reservas — enero 2025 a julio 2026.
-            </p>
-          </div>
-          <div className="font-mono" style={{ fontSize: 12, color: C.textFaint, textAlign: "right" }}>
-            <div>ACTUALIZADO 26·JUL·2026</div>
-            <div style={{ marginTop: 4 }}>NATANAEL DEMARCO — ANÁLISIS &amp; BI</div>
-          </div>
-        </div>
-      </header>
-
-      <main style={{ maxWidth: 1180, margin: "0 auto", padding: "32px 24px 60px" }}>
-        <section style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(230px, 1fr))", gap: 16, marginBottom: 32 }}>
-          <KpiCard label="Inflación mensual" value={ipcValue}
-            sub="Interanual 33,55% · último dato oficial INDEC (jun-26)"
-            sparkData={monthlyData.filter((d) => d.ipc != null).slice(-6)} sparkKey="ipc" sparkColor={C.coral}
-            delta={lastIpc.ipc - lastIpcPrev.ipc} deltaUnit=" pp" invertGood={true} />
-          <KpiCard label="Dólar blue" value={blueValue} sub={`Brecha vs. oficial: ${brecha}%`}
-            sparkData={monthlyData.slice(-6)} sparkKey="blue" sparkColor={C.gold}
-            delta={latest.blue - prevMonth.blue} deltaUnit="" invertGood={true} decimals={0} />
-          <KpiCard label="Riesgo país" value={riesgoValue + " pb"} sub="Mínimo del semestre"
-            sparkData={monthlyData.slice(-6)} sparkKey="riesgo" sparkColor={C.coral}
-            delta={latest.riesgo - prevMonth.riesgo} deltaUnit=" pb" invertGood={true} decimals={0} />
-          <KpiCard label="Reservas BCRA" value={reservasValue} sub="112 ruedas consecutivas de compras netas"
-            sparkData={monthlyData.slice(-6)} sparkKey="reservas" sparkColor={C.green}
-            delta={latest.reservas - prevMonth.reservas} deltaUnit=" M" invertGood={false} decimals={0} />
-        </section>
-
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 18 }}>
-          <span className="font-ui" style={{ fontSize: 12, color: C.textFaint, textTransform: "uppercase", letterSpacing: "0.08em" }}>Período</span>
-          {periods.map((p) => (
-            <button key={p.id} className="period-btn font-ui" onClick={() => setPeriod(p.id)} style={{
-              padding: "6px 16px", borderRadius: 999, fontSize: 13, fontWeight: 500, cursor: "pointer",
-              border: `1px solid ${period === p.id ? C.gold : C.hairline}`,
-              background: period === p.id ? C.goldSoft : "transparent",
-              color: period === p.id ? C.gold : C.textMuted,
-            }}>{p.label}</button>
-          ))}
-        </div>
-
-        <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 20, marginBottom: 20 }}>
-          <ChartPanel title="Inflación mensual (IPC) y media móvil 3 meses" source="Fuente: INDEC — IPC nivel general, variación mensual.">
-            <ResponsiveContainer>
-              <ComposedChart data={filtered} margin={{ top: 8, right: 12, left: -18, bottom: 0 }}>
-                <CartesianGrid stroke={C.hairline} vertical={false} />
-                <XAxis dataKey="month" tick={{ fill: C.textFaint, fontSize: 11 }} axisLine={{ stroke: C.hairline }} tickLine={false} />
-                <YAxis tick={{ fill: C.textFaint, fontSize: 11 }} axisLine={false} tickLine={false} unit="%" width={44} />
-                <Tooltip content={<CustomTooltip suffixMap={{ ipc: "%", ipcMA: "%" }} />} />
-                <Bar dataKey="ipc" name="IPC mensual" fill={C.coral} radius={[4, 4, 0, 0]} isAnimationActive animationDuration={900} />
-                <Line type="monotone" dataKey="ipcMA" name="Media móvil 3m" stroke={C.gold} strokeWidth={2}
-                      strokeDasharray="4 4" dot={false} isAnimationActive animationDuration={1100} connectNulls />
-              </ComposedChart>
-            </ResponsiveContainer>
-          </ChartPanel>
-        </div>
-
-        <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 20, marginBottom: 20 }}>
-          <ChartPanel title="Tipo de cambio: oficial vs. blue" source="Fuente: BCRA (mayorista/minorista) y relevamiento de casas de cambio (blue).">
-            <ResponsiveContainer>
-              <ComposedChart data={filtered} margin={{ top: 8, right: 12, left: -8, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="blueFill" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor={C.gold} stopOpacity={0.28} />
-                    <stop offset="100%" stopColor={C.gold} stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid stroke={C.hairline} vertical={false} />
-                <XAxis dataKey="month" tick={{ fill: C.textFaint, fontSize: 11 }} axisLine={{ stroke: C.hairline }} tickLine={false} />
-                <YAxis tick={{ fill: C.textFaint, fontSize: 11 }} axisLine={false} tickLine={false} width={54} />
-                <Tooltip content={<CustomTooltip prefixMap={{ oficial: "$", blue: "$" }} />} />
-                <Area type="monotone" dataKey="blue" name="Dólar blue" stroke={C.gold} fill="url(#blueFill)" strokeWidth={2.5} isAnimationActive animationDuration={1000} />
-                <Line type="monotone" dataKey="oficial" name="Dólar oficial" stroke={C.steel} strokeWidth={2} dot={false} isAnimationActive animationDuration={1000} />
-              </ComposedChart>
-            </ResponsiveContainer>
-          </ChartPanel>
-        </div>
-
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 20, marginBottom: 20 }}>
-          <ChartPanel title="Reservas internacionales BCRA" source="Fuente: BCRA — reservas brutas, en millones de USD." height={240}>
-            <ResponsiveContainer>
-              <AreaChart data={filtered} margin={{ top: 8, right: 12, left: -12, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="resFill" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor={C.green} stopOpacity={0.35} />
-                    <stop offset="100%" stopColor={C.green} stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid stroke={C.hairline} vertical={false} />
-                <XAxis dataKey="month" tick={{ fill: C.textFaint, fontSize: 10 }} axisLine={{ stroke: C.hairline }} tickLine={false} interval="preserveStartEnd" />
-                <YAxis tick={{ fill: C.textFaint, fontSize: 10 }} axisLine={false} tickLine={false} width={46} />
-                <Tooltip content={<CustomTooltip suffixMap={{ reservas: " M" }} prefixMap={{ reservas: "U$S " }} />} />
-                <Area type="monotone" dataKey="reservas" name="Reservas" stroke={C.green} fill="url(#resFill)" strokeWidth={2} isAnimationActive animationDuration={1000} />
-              </AreaChart>
-            </ResponsiveContainer>
-          </ChartPanel>
-
-          <ChartPanel title="Riesgo país (EMBI+ Argentina)" source="Fuente: JP Morgan EMBI+ vía informes de mercado." height={240}>
-            <ResponsiveContainer>
-              <LineChart data={filtered} margin={{ top: 8, right: 12, left: -12, bottom: 0 }}>
-                <CartesianGrid stroke={C.hairline} vertical={false} />
-                <XAxis dataKey="month" tick={{ fill: C.textFaint, fontSize: 10 }} axisLine={{ stroke: C.hairline }} tickLine={false} interval="preserveStartEnd" />
-                <YAxis tick={{ fill: C.textFaint, fontSize: 10 }} axisLine={false} tickLine={false} width={40} unit=" pb" />
-                <Tooltip content={<CustomTooltip suffixMap={{ riesgo: " pb" }} />} />
-                <Line type="monotone" dataKey="riesgo" name="Riesgo país" stroke={C.coral} strokeWidth={2.5} dot={false} isAnimationActive animationDuration={1000} />
-              </LineChart>
-            </ResponsiveContainer>
-          </ChartPanel>
-        </div>
-
-        <ChartPanel title="Desglose por rubro — incidencia en el IPC de junio 2026"
-          source="Fuente: INDEC, IPC junio 2026. Recreación y cultura lideró el mes por el impacto de aumentos estacionales." height={260}>
-          <ResponsiveContainer>
-            <BarChart data={rubrosJun26} layout="vertical" margin={{ top: 4, right: 24, left: 8, bottom: 0 }}>
-              <CartesianGrid stroke={C.hairline} horizontal={false} />
-              <XAxis type="number" tick={{ fill: C.textFaint, fontSize: 10 }} axisLine={false} tickLine={false} unit="%" />
-              <YAxis type="category" dataKey="rubro" tick={{ fill: C.textMuted, fontSize: 12 }} axisLine={false} tickLine={false} width={150} />
-              <Tooltip content={<CustomTooltip suffixMap={{ valor: "%" }} />} />
-              <Bar dataKey="valor" name="Var. % mensual" radius={[0, 6, 6, 0]} isAnimationActive animationDuration={900}>
-                {rubrosJun26.map((r, i) => (
-                  <Cell key={i} fill={i === 0 ? C.coral : C.steel} fillOpacity={i === 0 ? 1 : 0.55} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </ChartPanel>
-
-        <footer style={{ marginTop: 40, paddingTop: 20, borderTop: `1px solid ${C.hairline}` }}>
-          <p className="font-ui" style={{ fontSize: 12, color: C.textFaint, lineHeight: 1.7, maxWidth: 760 }}>
-            Panel elaborado por <strong style={{ color: C.textMuted }}>Natanael Demarco</strong> — Analista de Datos &amp; BI, como pieza de portfolio.
-            Serie mensual reconstruida a partir de reportes públicos de INDEC, BCRA, Ámbito, El Cronista y La Nación (ene-2025 a jul-2026)
-            con fines demostrativos; los meses sin publicación oficial de IPC se muestran sin dato. Stack: React, Recharts.
-          </p>
-        </footer>
-      </main>
-    </div>
-  );
+  const ipcValue = useCountUp(lastIpc.ipc, {
+    decimals: 2,
+    suffix: "%"
+  });
+  const blueValue = useCountUp(latest.blue, {
+    decimals: 0,
+    prefix: "$"
+  });
+  const riesgoValue = useCountUp(latest.riesgo, {
+    decimals: 0
+  });
+  const reservasValue = useCountUp(latest.reservas / 1000, {
+    decimals: 2,
+    prefix: "U$S ",
+    suffix: " mM"
+  });
+  const periods = [{
+    id: "todo",
+    label: "Todo"
+  }, {
+    id: "2025",
+    label: "2025"
+  }, {
+    id: "2026",
+    label: "2026"
+  }];
+  return /*#__PURE__*/React.createElement("div", {
+    className: "font-ui",
+    style: {
+      minHeight: "100vh",
+      background: C.bg,
+      color: C.text
+    }
+  }, /*#__PURE__*/React.createElement("style", null, FONTS + GLOBAL_CSS), /*#__PURE__*/React.createElement(TickerTape, null), /*#__PURE__*/React.createElement("header", {
+    style: {
+      padding: "28px 18px 22px",
+      maxWidth: 1180,
+      margin: "0 auto",
+      borderBottom: `1px solid ${C.hairline}`,
+      backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 27px, ${C.hairline} 28px)`
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginBottom: 18
+    }
+  }, /*#__PURE__*/React.createElement("a", {
+    href: "./index.html",
+    className: "back-link font-ui",
+    style: {
+      fontSize: 13
+    }
+  }, "\u2190 Volver al portfolio")), /*#__PURE__*/React.createElement("div", {
+    className: "rise-in",
+    style: {
+      display: "flex",
+      flexWrap: "wrap",
+      justifyContent: "space-between",
+      gap: 20,
+      alignItems: "flex-end"
+    }
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    className: "font-ui",
+    style: {
+      fontSize: 12,
+      letterSpacing: "0.14em",
+      color: C.gold,
+      textTransform: "uppercase",
+      marginBottom: 10
+    }
+  }, "Panel macroecon\xF3mico \xB7 Rep\xFAblica Argentina"), /*#__PURE__*/React.createElement("h1", {
+    className: "font-display",
+    style: {
+      fontSize: "clamp(32px, 5vw, 52px)",
+      fontWeight: 800,
+      letterSpacing: "-0.03em",
+      margin: 0,
+      lineHeight: 1.02
+    }
+  }, "Pulso Econ\xF3mico Argentino"), /*#__PURE__*/React.createElement("p", {
+    className: "font-ui",
+    style: {
+      color: C.textMuted,
+      fontSize: 15,
+      marginTop: 12,
+      maxWidth: 520
+    }
+  }, "Inflaci\xF3n, tipo de cambio, riesgo pa\xEDs y reservas \u2014 enero 2025 a julio 2026.")), /*#__PURE__*/React.createElement("div", {
+    className: "font-mono",
+    style: {
+      fontSize: 12,
+      color: C.textFaint,
+      textAlign: "right"
+    }
+  }, /*#__PURE__*/React.createElement("div", null, "ACTUALIZADO 26\xB7JUL\xB72026"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 4
+    }
+  }, "NATANAEL DEMARCO \u2014 AN\xC1LISIS & BI")))), /*#__PURE__*/React.createElement("main", {
+    style: {
+      maxWidth: 1180,
+      margin: "0 auto",
+      padding: "22px 18px 48px"
+    }
+  }, /*#__PURE__*/React.createElement("section", {
+    style: {
+      display: "grid",
+      gridTemplateColumns: "repeat(auto-fit, minmax(230px, 1fr))",
+      gap: 16,
+      marginBottom: 32
+    }
+  }, /*#__PURE__*/React.createElement(KpiCard, {
+    label: "Inflaci\xF3n mensual",
+    value: ipcValue,
+    sub: "Interanual 33,55% \xB7 \xFAltimo dato oficial INDEC (jun-26)",
+    sparkData: monthlyData.filter(d => d.ipc != null).slice(-6),
+    sparkKey: "ipc",
+    sparkColor: C.coral,
+    delta: lastIpc.ipc - lastIpcPrev.ipc,
+    deltaUnit: " pp",
+    invertGood: true
+  }), /*#__PURE__*/React.createElement(KpiCard, {
+    label: "D\xF3lar blue",
+    value: blueValue,
+    sub: `Brecha vs. oficial: ${brecha}%`,
+    sparkData: monthlyData.slice(-6),
+    sparkKey: "blue",
+    sparkColor: C.gold,
+    delta: latest.blue - prevMonth.blue,
+    deltaUnit: "",
+    invertGood: true,
+    decimals: 0
+  }), /*#__PURE__*/React.createElement(KpiCard, {
+    label: "Riesgo pa\xEDs",
+    value: riesgoValue + " pb",
+    sub: "M\xEDnimo del semestre",
+    sparkData: monthlyData.slice(-6),
+    sparkKey: "riesgo",
+    sparkColor: C.coral,
+    delta: latest.riesgo - prevMonth.riesgo,
+    deltaUnit: " pb",
+    invertGood: true,
+    decimals: 0
+  }), /*#__PURE__*/React.createElement(KpiCard, {
+    label: "Reservas BCRA",
+    value: reservasValue,
+    sub: "112 ruedas consecutivas de compras netas",
+    sparkData: monthlyData.slice(-6),
+    sparkKey: "reservas",
+    sparkColor: C.green,
+    delta: latest.reservas - prevMonth.reservas,
+    deltaUnit: " M",
+    invertGood: false,
+    decimals: 0
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 10,
+      marginBottom: 18
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "font-ui",
+    style: {
+      fontSize: 12,
+      color: C.textFaint,
+      textTransform: "uppercase",
+      letterSpacing: "0.08em"
+    }
+  }, "Per\xEDodo"), periods.map(p => /*#__PURE__*/React.createElement("button", {
+    key: p.id,
+    className: "period-btn font-ui",
+    onClick: () => setPeriod(p.id),
+    style: {
+      padding: "6px 16px",
+      borderRadius: 999,
+      fontSize: 13,
+      fontWeight: 500,
+      cursor: "pointer",
+      border: `1px solid ${period === p.id ? C.gold : C.hairline}`,
+      background: period === p.id ? C.goldSoft : "transparent",
+      color: period === p.id ? C.gold : C.textMuted
+    }
+  }, p.label))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "grid",
+      gridTemplateColumns: "1fr",
+      gap: 20,
+      marginBottom: 20
+    }
+  }, /*#__PURE__*/React.createElement(ChartPanel, {
+    title: "Inflaci\xF3n mensual (IPC) y media m\xF3vil 3 meses",
+    source: "Fuente: INDEC \u2014 IPC nivel general, variaci\xF3n mensual."
+  }, /*#__PURE__*/React.createElement(ResponsiveContainer, null, /*#__PURE__*/React.createElement(ComposedChart, {
+    data: filtered,
+    margin: {
+      top: 8,
+      right: 12,
+      left: -18,
+      bottom: 0
+    }
+  }, /*#__PURE__*/React.createElement(CartesianGrid, {
+    stroke: C.hairline,
+    vertical: false
+  }), /*#__PURE__*/React.createElement(XAxis, {
+    dataKey: "month",
+    tick: {
+      fill: C.textFaint,
+      fontSize: 11
+    },
+    axisLine: {
+      stroke: C.hairline
+    },
+    tickLine: false
+  }), /*#__PURE__*/React.createElement(YAxis, {
+    tick: {
+      fill: C.textFaint,
+      fontSize: 11
+    },
+    axisLine: false,
+    tickLine: false,
+    unit: "%",
+    width: 44
+  }), /*#__PURE__*/React.createElement(Tooltip, {
+    content: /*#__PURE__*/React.createElement(CustomTooltip, {
+      suffixMap: {
+        ipc: "%",
+        ipcMA: "%"
+      }
+    })
+  }), /*#__PURE__*/React.createElement(Bar, {
+    dataKey: "ipc",
+    name: "IPC mensual",
+    fill: C.coral,
+    radius: [4, 4, 0, 0],
+    isAnimationActive: true,
+    animationDuration: 900
+  }), /*#__PURE__*/React.createElement(Line, {
+    type: "monotone",
+    dataKey: "ipcMA",
+    name: "Media m\xF3vil 3m",
+    stroke: C.gold,
+    strokeWidth: 2,
+    strokeDasharray: "4 4",
+    dot: false,
+    isAnimationActive: true,
+    animationDuration: 1100,
+    connectNulls: true
+  }))))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "grid",
+      gridTemplateColumns: "1fr",
+      gap: 20,
+      marginBottom: 20
+    }
+  }, /*#__PURE__*/React.createElement(ChartPanel, {
+    title: "Tipo de cambio: oficial vs. blue",
+    source: "Fuente: BCRA (mayorista/minorista) y relevamiento de casas de cambio (blue)."
+  }, /*#__PURE__*/React.createElement(ResponsiveContainer, null, /*#__PURE__*/React.createElement(ComposedChart, {
+    data: filtered,
+    margin: {
+      top: 8,
+      right: 12,
+      left: -8,
+      bottom: 0
+    }
+  }, /*#__PURE__*/React.createElement("defs", null, /*#__PURE__*/React.createElement("linearGradient", {
+    id: "blueFill",
+    x1: "0",
+    y1: "0",
+    x2: "0",
+    y2: "1"
+  }, /*#__PURE__*/React.createElement("stop", {
+    offset: "0%",
+    stopColor: C.gold,
+    stopOpacity: 0.28
+  }), /*#__PURE__*/React.createElement("stop", {
+    offset: "100%",
+    stopColor: C.gold,
+    stopOpacity: 0
+  }))), /*#__PURE__*/React.createElement(CartesianGrid, {
+    stroke: C.hairline,
+    vertical: false
+  }), /*#__PURE__*/React.createElement(XAxis, {
+    dataKey: "month",
+    tick: {
+      fill: C.textFaint,
+      fontSize: 11
+    },
+    axisLine: {
+      stroke: C.hairline
+    },
+    tickLine: false
+  }), /*#__PURE__*/React.createElement(YAxis, {
+    tick: {
+      fill: C.textFaint,
+      fontSize: 11
+    },
+    axisLine: false,
+    tickLine: false,
+    width: 54
+  }), /*#__PURE__*/React.createElement(Tooltip, {
+    content: /*#__PURE__*/React.createElement(CustomTooltip, {
+      prefixMap: {
+        oficial: "$",
+        blue: "$"
+      }
+    })
+  }), /*#__PURE__*/React.createElement(Area, {
+    type: "monotone",
+    dataKey: "blue",
+    name: "D\xF3lar blue",
+    stroke: C.gold,
+    fill: "url(#blueFill)",
+    strokeWidth: 2.5,
+    isAnimationActive: true,
+    animationDuration: 1000
+  }), /*#__PURE__*/React.createElement(Line, {
+    type: "monotone",
+    dataKey: "oficial",
+    name: "D\xF3lar oficial",
+    stroke: C.steel,
+    strokeWidth: 2,
+    dot: false,
+    isAnimationActive: true,
+    animationDuration: 1000
+  }))))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "grid",
+      gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+      gap: 20,
+      marginBottom: 20
+    }
+  }, /*#__PURE__*/React.createElement(ChartPanel, {
+    title: "Reservas internacionales BCRA",
+    source: "Fuente: BCRA \u2014 reservas brutas, en millones de USD.",
+    height: 240
+  }, /*#__PURE__*/React.createElement(ResponsiveContainer, null, /*#__PURE__*/React.createElement(AreaChart, {
+    data: filtered,
+    margin: {
+      top: 8,
+      right: 12,
+      left: -12,
+      bottom: 0
+    }
+  }, /*#__PURE__*/React.createElement("defs", null, /*#__PURE__*/React.createElement("linearGradient", {
+    id: "resFill",
+    x1: "0",
+    y1: "0",
+    x2: "0",
+    y2: "1"
+  }, /*#__PURE__*/React.createElement("stop", {
+    offset: "0%",
+    stopColor: C.green,
+    stopOpacity: 0.35
+  }), /*#__PURE__*/React.createElement("stop", {
+    offset: "100%",
+    stopColor: C.green,
+    stopOpacity: 0
+  }))), /*#__PURE__*/React.createElement(CartesianGrid, {
+    stroke: C.hairline,
+    vertical: false
+  }), /*#__PURE__*/React.createElement(XAxis, {
+    dataKey: "month",
+    tick: {
+      fill: C.textFaint,
+      fontSize: 10
+    },
+    axisLine: {
+      stroke: C.hairline
+    },
+    tickLine: false,
+    interval: "preserveStartEnd"
+  }), /*#__PURE__*/React.createElement(YAxis, {
+    tick: {
+      fill: C.textFaint,
+      fontSize: 10
+    },
+    axisLine: false,
+    tickLine: false,
+    width: 46
+  }), /*#__PURE__*/React.createElement(Tooltip, {
+    content: /*#__PURE__*/React.createElement(CustomTooltip, {
+      suffixMap: {
+        reservas: " M"
+      },
+      prefixMap: {
+        reservas: "U$S "
+      }
+    })
+  }), /*#__PURE__*/React.createElement(Area, {
+    type: "monotone",
+    dataKey: "reservas",
+    name: "Reservas",
+    stroke: C.green,
+    fill: "url(#resFill)",
+    strokeWidth: 2,
+    isAnimationActive: true,
+    animationDuration: 1000
+  })))), /*#__PURE__*/React.createElement(ChartPanel, {
+    title: "Riesgo pa\xEDs (EMBI+ Argentina)",
+    source: "Fuente: JP Morgan EMBI+ v\xEDa informes de mercado.",
+    height: 240
+  }, /*#__PURE__*/React.createElement(ResponsiveContainer, null, /*#__PURE__*/React.createElement(LineChart, {
+    data: filtered,
+    margin: {
+      top: 8,
+      right: 12,
+      left: -12,
+      bottom: 0
+    }
+  }, /*#__PURE__*/React.createElement(CartesianGrid, {
+    stroke: C.hairline,
+    vertical: false
+  }), /*#__PURE__*/React.createElement(XAxis, {
+    dataKey: "month",
+    tick: {
+      fill: C.textFaint,
+      fontSize: 10
+    },
+    axisLine: {
+      stroke: C.hairline
+    },
+    tickLine: false,
+    interval: "preserveStartEnd"
+  }), /*#__PURE__*/React.createElement(YAxis, {
+    tick: {
+      fill: C.textFaint,
+      fontSize: 10
+    },
+    axisLine: false,
+    tickLine: false,
+    width: 40,
+    unit: " pb"
+  }), /*#__PURE__*/React.createElement(Tooltip, {
+    content: /*#__PURE__*/React.createElement(CustomTooltip, {
+      suffixMap: {
+        riesgo: " pb"
+      }
+    })
+  }), /*#__PURE__*/React.createElement(Line, {
+    type: "monotone",
+    dataKey: "riesgo",
+    name: "Riesgo pa\xEDs",
+    stroke: C.coral,
+    strokeWidth: 2.5,
+    dot: false,
+    isAnimationActive: true,
+    animationDuration: 1000
+  }))))), /*#__PURE__*/React.createElement(ChartPanel, {
+    title: "Desglose por rubro \u2014 incidencia en el IPC de junio 2026",
+    source: "Fuente: INDEC, IPC junio 2026. Recreaci\xF3n y cultura lider\xF3 el mes por el impacto de aumentos estacionales.",
+    height: 260
+  }, /*#__PURE__*/React.createElement(ResponsiveContainer, null, /*#__PURE__*/React.createElement(BarChart, {
+    data: rubrosJun26,
+    layout: "vertical",
+    margin: {
+      top: 4,
+      right: 24,
+      left: 8,
+      bottom: 0
+    }
+  }, /*#__PURE__*/React.createElement(CartesianGrid, {
+    stroke: C.hairline,
+    horizontal: false
+  }), /*#__PURE__*/React.createElement(XAxis, {
+    type: "number",
+    tick: {
+      fill: C.textFaint,
+      fontSize: 10
+    },
+    axisLine: false,
+    tickLine: false,
+    unit: "%"
+  }), /*#__PURE__*/React.createElement(YAxis, {
+    type: "category",
+    dataKey: "rubro",
+    tick: {
+      fill: C.textMuted,
+      fontSize: 12
+    },
+    axisLine: false,
+    tickLine: false,
+    width: 150
+  }), /*#__PURE__*/React.createElement(Tooltip, {
+    content: /*#__PURE__*/React.createElement(CustomTooltip, {
+      suffixMap: {
+        valor: "%"
+      }
+    })
+  }), /*#__PURE__*/React.createElement(Bar, {
+    dataKey: "valor",
+    name: "Var. % mensual",
+    radius: [0, 6, 6, 0],
+    isAnimationActive: true,
+    animationDuration: 900
+  }, rubrosJun26.map((r, i) => /*#__PURE__*/React.createElement(Cell, {
+    key: i,
+    fill: i === 0 ? C.coral : C.steel,
+    fillOpacity: i === 0 ? 1 : 0.55
+  })))))), /*#__PURE__*/React.createElement("footer", {
+    style: {
+      marginTop: 40,
+      paddingTop: 20,
+      borderTop: `1px solid ${C.hairline}`
+    }
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "font-ui",
+    style: {
+      fontSize: 12,
+      color: C.textFaint,
+      lineHeight: 1.7,
+      maxWidth: 760
+    }
+  }, "Panel elaborado por ", /*#__PURE__*/React.createElement("strong", {
+    style: {
+      color: C.textMuted
+    }
+  }, "Natanael Demarco"), " \u2014 Analista de Datos & BI, como pieza de portfolio. Serie mensual reconstruida a partir de reportes p\xFAblicos de INDEC, BCRA, \xC1mbito, El Cronista y La Naci\xF3n (ene-2025 a jul-2026) con fines demostrativos; los meses sin publicaci\xF3n oficial de IPC se muestran sin dato. Stack: React, Recharts."))));
 }
-
 const root = ReactDOM.createRoot(document.getElementById("root"));
-root.render(<PulsoEconomicoArgentino />);
+root.render(/*#__PURE__*/React.createElement(PulsoEconomicoArgentino, null));
 </script>
 </body>
 </html>

@@ -6,175 +6,329 @@
   <title>Natanael · Data Analyst & Automation</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg: #080c10;
-      --bg2: #0d1117;
-      --surface: #131820;
-      --border: #1e2730;
-      --accent: #00e5a0;
-      --accent2: #0099ff;
-      --accent-dim: rgba(0, 229, 160, 0.12);
-      --text: #e8edf2;
-      --muted: #6b7a8d;
-      --font-head: 'Syne', sans-serif;
-      --font-body: 'Space Grotesk', sans-serif;
-      --font-mono: 'IBM Plex Mono', monospace;
+      /* Paper / spreadsheet canvas */
+      --paper: #F6F7F2;
+      --paper-alt: #EDEFE7;
+      --cell: #FFFFFF;
+      --grid: #D9DDD3;
+      --grid-strong: #B7BFAE;
+
+      /* Ink */
+      --ink: #16211B;
+      --muted: #5B6960;
+      --faint: #8C978A;
+
+      /* Signature accents */
+      --formula: #1857C6;
+      --formula-soft: rgba(24, 87, 198, 0.08);
+      --positive: #0B7A4B;
+      --positive-soft: rgba(11, 122, 75, 0.10);
+      --flag: #B5540E;
+      --flag-soft: rgba(181, 84, 14, 0.12);
+      --danger: #B23A32;
+      --danger-soft: rgba(178, 58, 50, 0.10);
+      --purple: #6647C2;
+
+      --font-display: 'JetBrains Mono', monospace;
+      --font-body: 'IBM Plex Sans', sans-serif;
+      --font-data: 'JetBrains Mono', monospace;
     }
 
     html { scroll-behavior: smooth; }
 
     body {
-      background: var(--bg);
-      color: var(--text);
+      background: var(--paper);
+      color: var(--ink);
       font-family: var(--font-body);
-      font-size: 14px;
+      font-size: 15px;
       line-height: 1.7;
       overflow-x: hidden;
+      padding-bottom: 56px; /* room for sticky sheet-tabs bar */
     }
 
+    /* faint spreadsheet grid texture across whole page */
     body::before {
       content: '';
       position: fixed;
       inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      background-image:
+        linear-gradient(var(--grid) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+      background-size: 48px 32px;
+      opacity: 0.35;
       pointer-events: none;
       z-index: 0;
-      opacity: 0.4;
     }
 
-    /* NAV */
-    nav {
+    a { color: inherit; }
+
+    /* ═══════════════ TOOLBAR ═══════════════ */
+    .toolbar {
       position: fixed;
       top: 0; left: 0; right: 0;
       z-index: 100;
+      background: var(--cell);
+      border-bottom: 1px solid var(--grid-strong);
+    }
+
+    .toolbar-menu {
       display: flex;
-      justify-content: space-between;
+      gap: 1.6rem;
+      padding: 0.4rem 2rem 0.3rem;
+      font-family: var(--font-data);
+      font-size: 0.68rem;
+      color: var(--faint);
+      letter-spacing: 0.02em;
+      border-bottom: 1px solid var(--grid);
+    }
+
+    .toolbar-menu span { cursor: default; user-select: none; }
+    .toolbar-menu span:hover { color: var(--muted); }
+
+    .toolbar-main {
+      display: flex;
       align-items: center;
-      padding: 1.2rem 4rem;
-      border-bottom: 1px solid var(--border);
-      background: rgba(8, 12, 16, 0.85);
-      backdrop-filter: blur(12px);
+      justify-content: space-between;
+      padding: 0.7rem 2rem;
     }
 
-    .nav-logo {
-      font-family: var(--font-head);
-      font-weight: 800;
-      font-size: 1.1rem;
-      letter-spacing: -0.02em;
-      color: var(--text);
-    }
-
-    .nav-logo span { color: var(--accent); }
-
-    .nav-links {
+    .toolbar-title {
       display: flex;
-      gap: 2.5rem;
-      list-style: none;
+      align-items: center;
+      gap: 0.6rem;
+      font-family: var(--font-data);
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--ink);
     }
 
-    .nav-links a {
-      font-family: var(--font-mono);
-            color: var(--muted);
-      text-decoration: none;
+    .toolbar-title .sheet-icon {
+      width: 20px; height: 20px;
+      border-radius: 3px;
+      background: var(--positive);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      color: #fff;
+    }
+
+    .toolbar-saved {
+      font-family: var(--font-data);
+      font-size: 0.68rem;
+      color: var(--faint);
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .toolbar-saved .dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: var(--positive);
+    }
+
+    .toolbar-right {
+      display: flex;
+      align-items: center;
+      gap: 1.2rem;
+    }
+
+    .toolbar-share {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: var(--formula);
+      color: #fff;
+      font-family: var(--font-body);
+      font-weight: 500;
       font-size: 0.78rem;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      transition: color 0.2s;
+      padding: 0.5rem 1.1rem;
+      border-radius: 4px;
+      text-decoration: none;
+      transition: background 0.2s, transform 0.2s;
     }
 
-    .nav-links a:hover { color: var(--accent); }
+    .toolbar-share:hover { background: #0F3F9E; transform: translateY(-1px); }
 
-    /* HERO */
+    @media (max-width: 720px) {
+      .toolbar-menu { display: none; }
+      .toolbar-main { padding: 0.6rem 1rem; }
+      .toolbar-title span.full { display: none; }
+    }
+
+    /* ═══════════════ COLUMN HEADER STRIP (hero framing) ═══════════════ */
+    .colhead {
+      display: flex;
+      padding-left: 46px;
+      font-family: var(--font-data);
+      font-size: 0.68rem;
+      color: var(--faint);
+      border-bottom: 1px solid var(--grid-strong);
+      background: var(--paper-alt);
+      position: relative;
+      z-index: 1;
+    }
+
+    .colhead span {
+      width: 90px;
+      text-align: center;
+      padding: 0.35rem 0;
+      border-right: 1px solid var(--grid);
+    }
+
+    @media (max-width: 720px) {
+      .colhead { display: none; }
+    }
+
+    /* ═══════════════ HERO ═══════════════ */
     .hero {
       position: relative;
-      min-height: 100vh;
+      display: flex;
+      padding: 0;
+      padding-top: 92px;
+    }
+
+    .row-gutter {
+      width: 46px;
+      flex-shrink: 0;
+      border-right: 1px solid var(--grid-strong);
+      background: var(--paper-alt);
       display: flex;
       flex-direction: column;
+      font-family: var(--font-data);
+      font-size: 0.65rem;
+      color: var(--faint);
+    }
+
+    .row-gutter span {
+      height: 48px;
+      display: flex;
+      align-items: center;
       justify-content: center;
-      padding: 8rem 4rem 4rem;
+      border-bottom: 1px solid var(--grid);
+    }
+
+    @media (max-width: 720px) {
+      .row-gutter { display: none; }
+    }
+
+    .hero-main {
+      flex: 1;
+      padding: 2.5rem 2rem 3.5rem;
+      min-width: 0;
+    }
+
+    .formula-bar {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      border: 1px solid var(--grid-strong);
+      background: var(--cell);
+      border-radius: 4px;
+      margin-bottom: 2.5rem;
+      max-width: 640px;
       overflow: hidden;
     }
 
-    .hero-grid-bg {
-      position: absolute;
-      inset: 0;
-      background-image:
-        linear-gradient(rgba(0,229,160,0.04) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0,229,160,0.04) 1px, transparent 1px);
-      background-size: 60px 60px;
-      mask-image: radial-gradient(ellipse 80% 60% at 50% 50%, black 40%, transparent 100%);
+    .formula-cellref {
+      font-family: var(--font-data);
+      font-size: 0.78rem;
+      color: var(--muted);
+      padding: 0.6rem 0.9rem;
+      border-right: 1px solid var(--grid);
+      background: var(--paper-alt);
     }
 
-    .hero-glow {
-      position: absolute;
-      width: 600px; height: 600px;
-      background: radial-gradient(circle, rgba(0,229,160,0.08) 0%, transparent 70%);
-      top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      pointer-events: none;
+    .formula-fx {
+      font-family: var(--font-data);
+      font-style: italic;
+      color: var(--formula);
+      padding: 0.6rem 0.7rem;
+      border-right: 1px solid var(--grid);
+      font-size: 0.85rem;
+    }
+
+    .formula-input {
+      font-family: var(--font-data);
+      font-size: 0.78rem;
+      color: var(--ink);
+      padding: 0.6rem 0.9rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .formula-input .blink-caret {
+      display: inline-block;
+      width: 1px; height: 1em;
+      background: var(--formula);
+      margin-left: 2px;
+      vertical-align: text-bottom;
+      animation: blink 1s step-end infinite;
     }
 
     .hero-tag {
-      font-family: var(--font-mono);
-            font-size: 0.72rem;
-      letter-spacing: 0.2em;
+      font-family: var(--font-data);
+      font-size: 0.72rem;
+      letter-spacing: 0.16em;
       text-transform: uppercase;
-      color: var(--accent);
-      margin-bottom: 1.5rem;
+      color: var(--positive);
+      margin-bottom: 1.2rem;
       display: flex;
       align-items: center;
-      gap: 0.8rem;
-      animation: fadeUp 0.8s ease both;
+      gap: 0.7rem;
     }
 
     .hero-tag::before {
       content: '';
       display: block;
-      width: 32px; height: 1px;
-      background: var(--accent);
+      width: 26px; height: 1px;
+      background: var(--positive);
     }
 
     .hero h1 {
-      font-family: var(--font-head);
-      font-size: clamp(3rem, 7vw, 6rem);
-      font-weight: 800;
-      line-height: 1.0;
-      letter-spacing: -0.04em;
-      max-width: 800px;
-      animation: fadeUp 0.8s 0.1s ease both;
+      font-family: var(--font-display);
+      font-size: clamp(2.2rem, 6vw, 4.6rem);
+      font-weight: 700;
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      max-width: 820px;
+      color: var(--ink);
     }
 
     .hero h1 em {
       font-style: normal;
-      color: var(--accent);
+      color: var(--positive);
+      background: var(--positive-soft);
+      padding: 0 0.15em;
     }
 
     .hero-sub {
-      margin-top: 1.8rem;
+      margin-top: 1.6rem;
       color: var(--muted);
       max-width: 480px;
-      font-size: 0.88rem;
+      font-size: 0.95rem;
       line-height: 1.8;
-      animation: fadeUp 0.8s 0.2s ease both;
     }
 
     .hero-cta {
-      margin-top: 3rem;
+      margin-top: 2.4rem;
       display: flex;
       gap: 1rem;
       flex-wrap: wrap;
-      animation: fadeUp 0.8s 0.3s ease both;
     }
 
     .btn {
       display: inline-flex;
       align-items: center;
       gap: 0.5rem;
-      padding: 0.85rem 1.8rem;
+      padding: 0.8rem 1.6rem;
       border-radius: 4px;
       font-family: var(--font-body);
       font-weight: 500;
@@ -182,276 +336,301 @@
       text-decoration: none;
       transition: all 0.2s;
       cursor: pointer;
-      border: none;
+      border: 1px solid transparent;
     }
 
     .btn-primary {
-      background: var(--accent);
-      color: #000;
-      font-weight: 500;
+      background: var(--positive);
+      color: #fff;
     }
 
     .btn-primary:hover {
-      background: #fff;
+      background: #08643D;
       transform: translateY(-2px);
-      box-shadow: 0 8px 30px rgba(0,229,160,0.25);
+      box-shadow: 0 8px 20px rgba(11,122,75,0.25);
     }
 
     .btn-ghost {
-      background: transparent;
-      color: var(--text);
-      border: 1px solid var(--border);
+      background: var(--cell);
+      color: var(--ink);
+      border-color: var(--grid-strong);
     }
 
     .btn-ghost:hover {
-      border-color: var(--accent);
-      color: var(--accent);
+      border-color: var(--formula);
+      color: var(--formula);
       transform: translateY(-2px);
     }
 
-    /* STATS BAR */
+    /* STATS as formulas */
     .stats-bar {
-      margin-top: 5rem;
-      display: flex;
-      gap: 3rem;
-      flex-wrap: wrap;
-      border-top: 1px solid var(--border);
-      padding-top: 2rem;
-      animation: fadeUp 0.8s 0.4s ease both;
+      margin-top: 3.5rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      border: 1px solid var(--grid-strong);
+      max-width: 900px;
     }
 
-    .stat { display: flex; flex-direction: column; gap: 0.3rem; }
+    .stat {
+      padding: 1.1rem 1.3rem;
+      border-right: 1px solid var(--grid);
+      border-bottom: 1px solid var(--grid);
+      background: var(--cell);
+    }
 
     .stat-num {
-      font-family: var(--font-head);
-      font-size: 2.2rem;
-      font-weight: 800;
-      letter-spacing: -0.04em;
-      color: var(--text);
+      font-family: var(--font-display);
+      font-size: 1.9rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--ink);
     }
 
-    .stat-num span { color: var(--accent); }
+    .stat-num span { color: var(--positive); font-size: 1.1rem; }
 
     .stat-label {
-      font-family: var(--font-mono);
-            font-size: 0.7rem;
-      letter-spacing: 0.12em;
+      font-family: var(--font-data);
+      font-size: 0.65rem;
+      letter-spacing: 0.06em;
       text-transform: uppercase;
       color: var(--muted);
+      margin-top: 0.3rem;
     }
 
-    /* SECTION BASE */
+    /* ═══════════════ SECTION BASE ═══════════════ */
     section {
-      padding: 6rem 4rem;
+      padding: 5rem 2rem;
       position: relative;
+      z-index: 1;
     }
 
     .section-tag {
-      font-family: var(--font-mono);
-            font-size: 0.7rem;
-      letter-spacing: 0.2em;
+      font-family: var(--font-data);
+      font-size: 0.68rem;
+      letter-spacing: 0.14em;
       text-transform: uppercase;
-      color: var(--accent);
-      margin-bottom: 1rem;
+      color: var(--formula);
+      margin-bottom: 0.9rem;
       display: flex;
       align-items: center;
-      gap: 0.8rem;
+      gap: 0.7rem;
     }
 
     .section-tag::before {
       content: '';
       display: block;
-      width: 20px; height: 1px;
-      background: var(--accent);
+      width: 18px; height: 1px;
+      background: var(--formula);
     }
 
     .section-title {
-      font-family: var(--font-head);
-      font-size: clamp(2rem, 4vw, 3.2rem);
-      font-weight: 800;
-      letter-spacing: -0.04em;
-      margin-bottom: 1rem;
-      line-height: 1.1;
+      font-family: var(--font-display);
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.8rem;
+      line-height: 1.15;
+      color: var(--ink);
     }
 
     .section-sub {
       color: var(--muted);
-      max-width: 500px;
-      font-size: 0.85rem;
-      margin-bottom: 3.5rem;
+      max-width: 520px;
+      font-size: 0.9rem;
+      margin-bottom: 3rem;
     }
 
-    /* SERVICES */
-    #servicios { background: var(--bg2); }
+    /* ═══════════════ SERVICIOS — TABLA ═══════════════ */
+    #servicios { background: var(--paper-alt); }
 
-    .services-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 1.5px;
-      background: var(--border);
-      border: 1px solid var(--border);
+    .services-table-wrap {
+      border: 1px solid var(--grid-strong);
+      background: var(--cell);
+      overflow-x: auto;
     }
 
-    .service-card {
-      background: var(--surface);
-      padding: 2.5rem;
-      position: relative;
-      overflow: hidden;
-      transition: background 0.3s;
+    table.services-table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 640px;
     }
 
-    .service-card:hover { background: #161e28; }
-
-    .service-card::after {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 2px;
-      background: linear-gradient(90deg, var(--accent), var(--accent2));
-      transform: scaleX(0);
-      transform-origin: left;
-      transition: transform 0.3s;
+    .services-table thead th {
+      text-align: left;
+      font-family: var(--font-data);
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      background: var(--paper-alt);
+      padding: 0.8rem 1.2rem;
+      border-bottom: 1px solid var(--grid-strong);
+      border-right: 1px solid var(--grid);
     }
 
-    .service-card:hover::after { transform: scaleX(1); }
+    .services-table thead th:last-child { border-right: none; }
 
-    .service-icon {
-      width: 40px; height: 40px;
-      border-radius: 6px;
-      background: var(--accent-dim);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.1rem;
-      margin-bottom: 1.5rem;
+    .services-table tbody td {
+      padding: 1.3rem 1.2rem;
+      border-bottom: 1px solid var(--grid);
+      border-right: 1px solid var(--grid);
+      vertical-align: top;
+      font-size: 0.88rem;
     }
 
-    .service-name {
-      font-family: var(--font-head);
-      font-size: 1.15rem;
+    .services-table tbody td:last-child { border-right: none; }
+    .services-table tbody tr:last-child td { border-bottom: none; }
+    .services-table tbody tr:nth-child(even) { background: var(--paper-alt); }
+    .services-table tbody tr:hover { background: var(--formula-soft); }
+
+    .svc-row-num {
+      font-family: var(--font-data);
+      color: var(--faint);
+      font-size: 0.75rem;
+      width: 36px;
+    }
+
+    .svc-icon { font-size: 1.1rem; margin-right: 0.5rem; }
+
+    .svc-name {
+      font-family: var(--font-display);
       font-weight: 700;
-      margin-bottom: 0.6rem;
+      font-size: 0.95rem;
+      color: var(--ink);
     }
 
-    .service-desc {
+    .svc-desc {
       color: var(--muted);
       font-size: 0.82rem;
-      margin-bottom: 1.5rem;
-      line-height: 1.8;
+      line-height: 1.7;
+      max-width: 320px;
     }
 
-    .service-price {
-      font-family: var(--font-head);
-      font-size: 1.6rem;
-      font-weight: 800;
-      color: var(--accent);
+    .svc-price {
+      font-family: var(--font-data);
+      font-weight: 600;
+      color: var(--positive);
+      white-space: nowrap;
     }
 
-    .service-price span {
-      font-family: var(--font-mono);
-      font-size: 0.75rem;
-      color: var(--muted);
+    .svc-price small {
+      display: block;
+      font-family: var(--font-body);
       font-weight: 400;
+      color: var(--faint);
+      font-size: 0.68rem;
+      margin-top: 0.2rem;
     }
 
-    .service-features {
-      margin-top: 1.2rem;
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
-
-    .service-features li {
+    .svc-delivery {
+      font-family: var(--font-data);
       font-size: 0.78rem;
       color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .svc-features {
+      list-style: none;
+      margin-top: 0.5rem;
       display: flex;
-      gap: 0.6rem;
+      flex-direction: column;
+      gap: 0.3rem;
     }
 
-    .service-features li::before {
-      content: '→';
-      color: var(--accent);
-      flex-shrink: 0;
+    .svc-features li {
+      font-size: 0.74rem;
+      color: var(--faint);
+      display: flex;
+      gap: 0.4rem;
     }
 
-    /* STACK */
-    #stack { background: var(--bg); }
+    .svc-features li::before { content: '→'; color: var(--positive); flex-shrink: 0; }
+
+    /* ═══════════════ STACK ═══════════════ */
+    #stack { background: var(--paper); }
 
     .skills-grid {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.8rem;
+      gap: 0.6rem;
     }
 
     .skill-pill {
       display: flex;
       align-items: center;
       gap: 0.5rem;
-      padding: 0.55rem 1.1rem;
-      border: 1px solid var(--border);
-      border-radius: 2px;
-      font-size: 0.78rem;
+      padding: 0.5rem 1rem;
+      border: 1px solid var(--grid-strong);
+      border-radius: 3px;
+      font-family: var(--font-data);
+      font-size: 0.76rem;
       color: var(--muted);
+      background: var(--cell);
       transition: all 0.2s;
-      background: var(--surface);
     }
 
     .skill-pill:hover {
-      border-color: var(--accent);
-      color: var(--accent);
-      background: var(--accent-dim);
+      border-color: var(--formula);
+      color: var(--formula);
+      background: var(--formula-soft);
     }
 
     .skill-pill .dot {
       width: 6px; height: 6px;
       border-radius: 50%;
-      background: var(--accent);
-      opacity: 0.6;
+      background: var(--positive);
     }
 
-    /* PROYECTOS */
-    #proyectos { background: var(--bg2); }
+    /* ═══════════════ PROYECTOS ═══════════════ */
+    #proyectos { background: var(--paper-alt); }
 
     .projects-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
       gap: 1px;
-      background: var(--border);
-      border: 1px solid var(--border);
+      background: var(--grid-strong);
+      border: 1px solid var(--grid-strong);
     }
 
     .project-card {
-      background: var(--surface);
-      padding: 2rem 2.5rem;
+      background: var(--cell);
+      padding: 1.8rem 2rem;
       position: relative;
       overflow: hidden;
-      transition: background 0.3s;
+      transition: background 0.25s;
     }
 
-    .project-card:hover { background: #161e28; }
+    .project-card:hover { background: var(--formula-soft); }
 
-    .project-label {
-      font-family: var(--font-mono);
-            font-size: 0.68rem;
-      letter-spacing: 0.15em;
+    a.project-card {
+      color: inherit;
+      text-decoration: none;
+      display: block;
+      cursor: pointer;
+    }
+
+    .project-range {
+      font-family: var(--font-data);
+      font-size: 0.65rem;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
-      color: var(--accent);
-      margin-bottom: 0.8rem;
+      color: var(--formula);
+      margin-bottom: 0.7rem;
     }
 
     .project-title {
-      font-family: var(--font-head);
-      font-size: 1.25rem;
+      font-family: var(--font-display);
+      font-size: 1.15rem;
       font-weight: 700;
-      margin-bottom: 0.7rem;
+      margin-bottom: 0.6rem;
+      color: var(--ink);
     }
 
     .project-desc {
       color: var(--muted);
-      font-size: 0.8rem;
-      line-height: 1.8;
-      margin-bottom: 1.5rem;
+      font-size: 0.82rem;
+      line-height: 1.75;
+      margin-bottom: 1.3rem;
     }
 
     .project-tags {
@@ -461,217 +640,193 @@
     }
 
     .project-tag {
-      font-family: var(--font-mono);
-            font-size: 0.68rem;
-      padding: 0.25rem 0.6rem;
-      border: 1px solid var(--border);
+      font-family: var(--font-data);
+      font-size: 0.66rem;
+      padding: 0.22rem 0.55rem;
+      border: 1px solid var(--grid-strong);
       color: var(--muted);
       border-radius: 2px;
-    }
-
-    .chart-deco {
-      position: absolute;
-      right: 1.5rem;
-      bottom: 1.5rem;
-      display: flex;
-      gap: 4px;
-      align-items: flex-end;
-      opacity: 0.15;
-    }
-
-    .chart-deco div {
-      width: 8px;
-      background: var(--accent);
-      border-radius: 1px;
-    }
-
-    a.project-card {
-      color: inherit;
-      text-decoration: none;
-      display: block;
-      cursor: pointer;
+      background: var(--paper-alt);
     }
 
     .project-card--featured {
-      background: #10201b;
-      border-left: 2px solid var(--accent);
+      background: var(--positive-soft);
+      border-left: 3px solid var(--positive);
     }
 
-    .project-card--featured:hover { background: #142a23; }
+    .project-card--featured:hover { background: rgba(11,122,75,0.16); }
 
     .project-live-badge {
-      font-family: var(--font-mono);
-            display: inline-flex;
+      font-family: var(--font-data);
+      display: inline-flex;
       align-items: center;
       gap: 0.4rem;
-      font-size: 0.65rem;
-      letter-spacing: 0.1em;
+      font-size: 0.64rem;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
-      color: var(--accent);
-      margin-bottom: 0.8rem;
+      color: var(--positive);
+      margin-bottom: 0.7rem;
     }
 
     .project-live-dot {
-      width: 6px;
-      height: 6px;
+      width: 6px; height: 6px;
       border-radius: 50%;
-      background: var(--accent);
-      box-shadow: 0 0 0 0 rgba(0,229,160,0.6);
+      background: var(--positive);
+      box-shadow: 0 0 0 0 rgba(11,122,75,0.5);
       animation: pulseDot 1.8s infinite;
     }
 
     @keyframes pulseDot {
-      0%   { box-shadow: 0 0 0 0 rgba(0,229,160,0.5); }
-      70%  { box-shadow: 0 0 0 8px rgba(0,229,160,0); }
-      100% { box-shadow: 0 0 0 0 rgba(0,229,160,0); }
+      0%   { box-shadow: 0 0 0 0 rgba(11,122,75,0.4); }
+      70%  { box-shadow: 0 0 0 7px rgba(11,122,75,0); }
+      100% { box-shadow: 0 0 0 0 rgba(11,122,75,0); }
     }
 
-    .project-arrow {
-      margin-left: 0.4rem;
-      display: inline-block;
-      transition: transform 0.2s;
-    }
+    .project-arrow { margin-left: 0.35rem; display: inline-block; transition: transform 0.2s; }
+    .project-card--featured:hover .project-arrow { transform: translate(2px, -2px); }
 
-    .project-card--featured:hover .project-arrow {
-      transform: translate(2px, -2px);
-    }
-
-    /* PROCESO */
-    #proceso { background: var(--bg); }
+    /* ═══════════════ PROCESO — filas de hoja ═══════════════ */
+    #proceso { background: var(--paper); }
 
     .process-list {
-      display: flex;
-      flex-direction: column;
-      gap: 0;
-      max-width: 700px;
-      border: 1px solid var(--border);
+      max-width: 760px;
+      border: 1px solid var(--grid-strong);
+      background: var(--cell);
     }
 
     .process-item {
       display: flex;
-      gap: 2rem;
-      padding: 1.8rem 2rem;
-      border-bottom: 1px solid var(--border);
+      gap: 0;
+      border-bottom: 1px solid var(--grid);
       transition: background 0.2s;
     }
 
     .process-item:last-child { border-bottom: none; }
-    .process-item:hover { background: var(--surface); }
+    .process-item:hover { background: var(--formula-soft); }
 
-    .process-num {
-      font-family: var(--font-head);
-      font-size: 2.5rem;
-      font-weight: 800;
-      color: var(--border);
-      line-height: 1;
-      min-width: 50px;
-      transition: color 0.2s;
+    .process-rownum {
+      width: 46px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-data);
+      font-size: 0.75rem;
+      color: var(--faint);
+      background: var(--paper-alt);
+      border-right: 1px solid var(--grid);
     }
 
-    .process-item:hover .process-num { color: var(--accent); }
+    .process-body {
+      padding: 1.3rem 1.6rem;
+    }
 
     .process-title {
-      font-family: var(--font-head);
-      font-size: 1.05rem;
+      font-family: var(--font-display);
+      font-size: 1rem;
       font-weight: 700;
-      margin-bottom: 0.4rem;
+      margin-bottom: 0.3rem;
+      color: var(--ink);
     }
 
     .process-desc {
-      font-size: 0.8rem;
+      font-size: 0.82rem;
       color: var(--muted);
-      line-height: 1.8;
+      line-height: 1.75;
     }
 
-    /* CONTACTO */
+    /* ═══════════════ CONTACTO ═══════════════ */
     #contacto {
-      background: var(--bg2);
+      background: var(--paper-alt);
       text-align: center;
-      padding: 7rem 4rem;
+      padding: 6rem 2rem;
     }
 
-    .contact-box {
-      max-width: 600px;
-      margin: 0 auto;
-    }
+    .contact-box { max-width: 600px; margin: 0 auto; }
 
     .contact-email {
-      display: inline-block;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
       margin-top: 2rem;
-      font-family: var(--font-head);
-      font-size: clamp(1.3rem, 3vw, 2rem);
-      font-weight: 800;
-      color: var(--accent);
+      font-family: var(--font-display);
+      font-size: clamp(1.1rem, 3vw, 1.7rem);
+      font-weight: 700;
+      color: var(--formula);
       text-decoration: none;
-      border-bottom: 2px solid transparent;
-      transition: border-color 0.2s;
+      padding: 0.5rem 1rem;
+      border: 1px solid var(--grid-strong);
+      background: var(--cell);
+      border-radius: 4px;
+      transition: all 0.2s;
     }
 
-    .contact-email:hover { border-color: var(--accent); }
+    .contact-email:hover { border-color: var(--formula); background: var(--formula-soft); }
 
     .social-links {
       display: flex;
       justify-content: center;
-      gap: 1.5rem;
-      margin-top: 2.5rem;
+      gap: 1.4rem;
+      margin-top: 2.2rem;
     }
 
     .social-link {
-      font-family: var(--font-mono);
-            color: var(--muted);
+      font-family: var(--font-data);
+      color: var(--muted);
       text-decoration: none;
-      font-size: 0.75rem;
-      letter-spacing: 0.12em;
+      font-size: 0.74rem;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
       transition: color 0.2s;
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
     }
 
-    .social-link:hover { color: var(--accent); }
+    .social-link:hover { color: var(--formula); }
 
-    /* FOOTER */
+    /* ═══════════════ SHEET TABS (bottom nav) ═══════════════ */
+    .sheet-tabs {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: stretch;
+      background: var(--paper-alt);
+      border-top: 1px solid var(--grid-strong);
+      overflow-x: auto;
+      font-family: var(--font-data);
+    }
+
+    .sheet-tab {
+      padding: 0.65rem 1.3rem;
+      font-size: 0.72rem;
+      color: var(--muted);
+      text-decoration: none;
+      white-space: nowrap;
+      border-right: 1px solid var(--grid);
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+    }
+
+    .sheet-tab:hover { background: var(--cell); color: var(--formula); }
+
+    .sheet-tab.add {
+      color: var(--faint);
+      font-weight: 600;
+    }
+
+    .sheet-tab.add:hover { color: var(--positive); }
+
+    /* ═══════════════ FOOTER ═══════════════ */
     footer {
-      font-family: var(--font-mono);
-      padding: 1.5rem 4rem;
-      border-top: 1px solid var(--border);
+      font-family: var(--font-data);
+      padding: 1.3rem 2rem 4.5rem;
+      border-top: 1px solid var(--grid);
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 0.7rem;
-      color: var(--muted);
-    }
-
-    /* TERMINAL BADGE */
-    .terminal-badge {
-      font-family: var(--font-mono);
-            display: inline-flex;
-      align-items: center;
-      gap: 0.6rem;
-      padding: 0.4rem 0.9rem;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 3px;
-      font-size: 0.72rem;
-      color: var(--muted);
-      margin-bottom: 2rem;
-    }
-
-    .terminal-badge .prompt { color: var(--accent); }
-
-    .blink {
-      display: inline-block;
-      width: 2px; height: 1em;
-      background: var(--accent);
-      margin-left: 2px;
-      vertical-align: text-bottom;
-      animation: blink 1s step-end infinite;
-    }
-
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(24px); }
-      to   { opacity: 1; transform: translateY(0); }
+      font-size: 0.68rem;
+      color: var(--faint);
+      background: var(--paper);
     }
 
     @keyframes blink {
@@ -681,42 +836,34 @@
 
     .reveal {
       opacity: 0;
-      transform: translateY(20px);
+      transform: translateY(16px);
       transition: opacity 0.6s ease, transform 0.6s ease;
     }
 
-    .reveal.visible {
-      opacity: 1;
-      transform: none;
-    }
+    .reveal.visible { opacity: 1; transform: none; }
 
     /* ═══════════════════════════════════════
-       DASHBOARD SHOWCASE SECTION
+       DASHBOARD SHOWCASE — restyled as sheet window
     ═══════════════════════════════════════ */
-    #dashboards {
-      background: var(--bg);
-      padding: 6rem 4rem;
-    }
+    #dashboards { background: var(--paper-alt); }
 
-    /* Tab nav */
     .dash-tabs {
       display: flex;
       gap: 0;
-      border: 1px solid var(--border);
+      border: 1px solid var(--grid-strong);
       border-bottom: none;
       width: fit-content;
-      margin-bottom: 0;
+      font-family: var(--font-data);
     }
 
     .dash-tab {
-      padding: 0.7rem 1.6rem;
-      font-size: 0.72rem;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
+      padding: 0.65rem 1.4rem;
+      font-size: 0.7rem;
+      letter-spacing: 0.04em;
       color: var(--muted);
       cursor: pointer;
-      border-right: 1px solid var(--border);
-      background: var(--bg2);
+      border-right: 1px solid var(--grid-strong);
+      background: var(--paper);
       transition: all 0.2s;
       user-select: none;
     }
@@ -724,87 +871,69 @@
     .dash-tab:last-child { border-right: none; }
 
     .dash-tab.active {
-      color: var(--accent);
-      background: var(--surface);
-      border-bottom: 2px solid var(--accent);
+      color: var(--formula);
+      background: var(--cell);
+      border-bottom: 2px solid var(--formula);
       margin-bottom: -1px;
     }
 
-    .dash-tab:hover:not(.active) {
-      color: var(--text);
-      background: var(--surface);
-    }
+    .dash-tab:hover:not(.active) { color: var(--ink); background: var(--cell); }
 
-    /* Dashboard window */
     .dash-window {
-      border: 1px solid var(--border);
-      background: #0b1018;
+      border: 1px solid var(--grid-strong);
+      background: var(--cell);
       border-radius: 0 4px 4px 4px;
       overflow: hidden;
     }
 
-    /* Window title bar */
     .dash-titlebar {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0.7rem 1.2rem;
-      background: #090d12;
-      border-bottom: 1px solid var(--border);
+      padding: 0.55rem 1.1rem;
+      background: var(--paper-alt);
+      border-bottom: 1px solid var(--grid-strong);
+      font-family: var(--font-data);
     }
 
     .dash-titlebar-left {
       display: flex;
       align-items: center;
-      gap: 0.7rem;
+      gap: 0.6rem;
     }
 
-    .dash-dot {
-      width: 10px; height: 10px;
-      border-radius: 50%;
+    .dash-fx {
+      font-style: italic;
+      color: var(--formula);
+      font-size: 0.8rem;
     }
-
-    .dash-dot.red   { background: #ff5f57; }
-    .dash-dot.yellow{ background: #febc2e; }
-    .dash-dot.green { background: #28c840; }
 
     .dash-title-text {
-      font-family: var(--font-mono);
-            font-size: 0.7rem;
+      font-size: 0.7rem;
       color: var(--muted);
-      margin-left: 0.5rem;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.03em;
     }
 
     .dash-titlebar-right {
-      font-family: var(--font-mono);
-            font-size: 0.65rem;
-      color: #2a3a4a;
-      letter-spacing: 0.05em;
+      font-size: 0.64rem;
+      color: var(--faint);
+      letter-spacing: 0.03em;
     }
 
-    /* Dashboard panels */
-    .dash-panel {
-      display: none;
-      padding: 1.5rem;
-      gap: 1rem;
-      flex-direction: column;
-    }
-
+    .dash-panel { display: none; padding: 1.4rem; gap: 1rem; flex-direction: column; }
     .dash-panel.active { display: flex; }
 
-    /* KPI row */
     .kpi-row {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 1rem;
+      gap: 1px;
+      background: var(--grid);
+      border: 1px solid var(--grid);
     }
 
     .kpi-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 3px;
-      padding: 1rem 1.2rem;
+      background: var(--cell);
+      padding: 0.9rem 1.1rem;
       position: relative;
       overflow: hidden;
     }
@@ -816,48 +945,775 @@
       height: 2px;
     }
 
-    .kpi-card.green-accent::before { background: var(--accent); }
-    .kpi-card.blue-accent::before  { background: var(--accent2); }
-    .kpi-card.orange-accent::before{ background: #ff7b35; }
-    .kpi-card.purple-accent::before{ background: #a78bfa; }
+    .kpi-card.green-accent::before  { background: var(--positive); }
+    .kpi-card.blue-accent::before   { background: var(--formula); }
+    .kpi-card.orange-accent::before { background: var(--flag); }
+    .kpi-card.purple-accent::before { background: var(--purple); }
 
     .kpi-label {
-      font-family: var(--font-mono);
-            font-size: 0.63rem;
-      letter-spacing: 0.12em;
+      font-family: var(--font-data);
+      font-size: 0.62rem;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
       color: var(--muted);
-      margin-bottom: 0.4rem;
+      margin-bottom: 0.35rem;
     }
 
     .kpi-value {
-      font-family: var(--font-head);
-      font-size: 1.7rem;
-      font-weight: 800;
-      letter-spacing: -0.04em;
-      color: var(--text);
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--ink);
       line-height: 1;
     }
 
-    .kpi-value.green  { color: var(--accent); }
-    .kpi-value.blue   { color: var(--accent2); }
-    .kpi-value.orange { color: #ff7b35; }
-    .kpi-value.purple { color: #a78bfa; }
+    .kpi-value.green  { color: var(--positive); }
+    .kpi-value.blue   { color: var(--formula); }
+    .kpi-value.orange { color: var(--flag); }
+    .kpi-value.purple { color: var(--purple); }
 
     .kpi-delta {
-      font-size: 0.65rem;
-      margin-top: 0.4rem;
+      font-family: var(--font-data);
+      font-size: 0.63rem;
+      margin-top: 0.35rem;
       color: var(--muted);
     }
 
-    .kpi-delta.up   { color: var(--accent); }
-    .kpi-delta.down { color: #ff5f57; }
+    .kpi-delta.up   { color: var(--positive); }
+    .kpi-delta.down { color: var(--danger); }
 
-    /* Chart row */
-    .chart-row {
-      display: grid;
-      gap: 1rem;
+    .chart-row { display: grid; gap: 1px; background: var(--grid); border: 1px solid var(--grid); }
+    .chart-row.two-col { grid-template-columns: 1fr 1fr; }
+    .chart-row.main-side { grid-template-columns: 2fr 1fr; }
+
+    .chart-box { background: var(--cell); padding: 1.1rem 1.3rem; }
+
+    .chart-box-title {
+      font-family: var(--font-data);
+      font-size: 0.66rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.9rem;
     }
 
-    .chart-row.two-col { grid-template-columns: 1fr 1fr; }
-    .chart-row.main-side { gr
+    .bar-chart { display: flex; align-items: flex-end; gap: 8px; height: 110px; }
+    .bar-group { display: flex; flex-direction: column; align-items: center; flex: 1; gap: 5px; height: 100%; justify-content: flex-end; }
+
+    .bar-fill {
+      width: 100%;
+      border-radius: 2px 2px 0 0;
+      transform-origin: bottom;
+      transform: scaleY(0);
+      transition: transform 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .bar-fill.primary   { background: linear-gradient(180deg, var(--positive), rgba(11,122,75,0.35)); }
+    .bar-fill.secondary { background: linear-gradient(180deg, var(--formula), rgba(24,87,198,0.3)); }
+    .bar-fill.tertiary  { background: linear-gradient(180deg, var(--flag), rgba(181,84,14,0.3)); }
+
+    .bar-label { font-family: var(--font-data); font-size: 0.58rem; color: var(--muted); text-align: center; white-space: nowrap; }
+
+    .line-chart-wrap { height: 110px; position: relative; }
+    .line-chart-wrap svg { width: 100%; height: 100%; overflow: visible; }
+
+    .line-path {
+      fill: none; stroke: var(--positive); stroke-width: 2;
+      stroke-linecap: round; stroke-linejoin: round;
+      stroke-dasharray: 1000; stroke-dashoffset: 1000;
+      transition: stroke-dashoffset 1.8s ease;
+    }
+
+    .line-path.blue { stroke: var(--formula); }
+    .line-area { stroke: none; opacity: 0; transition: opacity 1s ease 0.5s; }
+
+    .donut-wrap { display: flex; align-items: center; gap: 1.4rem; }
+    .donut-svg { flex-shrink: 0; }
+    .donut-circle-bg { fill: none; stroke: var(--grid); stroke-width: 10; }
+    .donut-circle {
+      fill: none; stroke-width: 10; stroke-linecap: round;
+      transform: rotate(-90deg); transform-origin: 50% 50%;
+      stroke-dasharray: 251; stroke-dashoffset: 251;
+      transition: stroke-dashoffset 1.4s cubic-bezier(0.4,0,0.2,1) 0.3s;
+    }
+
+    .donut-legend { display: flex; flex-direction: column; gap: 0.55rem; }
+    .legend-item { font-family: var(--font-data); display: flex; align-items: center; gap: 0.5rem; font-size: 0.7rem; color: var(--muted); }
+    .legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+    .hbar-list { display: flex; flex-direction: column; gap: 0.7rem; }
+    .hbar-header { font-family: var(--font-data); display: flex; justify-content: space-between; font-size: 0.65rem; color: var(--muted); margin-bottom: 4px; }
+    .hbar-track { height: 5px; background: var(--grid); border-radius: 3px; overflow: hidden; }
+    .hbar-fill { height: 100%; border-radius: 3px; width: 0%; transition: width 1.2s cubic-bezier(0.4,0,0.2,1); }
+
+    .mini-table { width: 100%; border-collapse: collapse; font-size: 0.72rem; font-family: var(--font-data); }
+    .mini-table th {
+      text-align: left; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase;
+      padding: 0 0 0.6rem; font-size: 0.6rem; border-bottom: 1px solid var(--grid-strong);
+    }
+    .mini-table td { padding: 0.5rem 0; color: var(--muted); border-bottom: 1px solid var(--grid); }
+    .mini-table td:last-child { text-align: right; }
+
+    .badge { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 2px; font-size: 0.62rem; letter-spacing: 0.03em; font-family: var(--font-data); }
+    .badge.ok  { background: var(--positive-soft); color: var(--positive); }
+    .badge.warn{ background: var(--flag-soft); color: var(--flag); }
+    .badge.err { background: var(--danger-soft); color: var(--danger); }
+
+    .dash-panel.active .bar-fill    { transform: scaleY(1); }
+    .dash-panel.active .line-path   { stroke-dashoffset: 0; }
+    .dash-panel.active .line-area   { opacity: 0.14; }
+    .dash-panel.active .donut-circle{ stroke-dashoffset: var(--target-offset); }
+    .dash-panel.active .hbar-fill   { width: var(--target-w); }
+
+    @media (max-width: 860px) {
+      .kpi-row { grid-template-columns: repeat(2, 1fr); }
+      .chart-row.two-col, .chart-row.main-side { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 720px) {
+      section { padding: 3.5rem 1.2rem; }
+      .hero-main { padding: 2rem 1.2rem 3rem; }
+      .stats-bar { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+    <div class="toolbar-menu">
+      <span>Archivo</span><span>Editar</span><span>Ver</span><span>Insertar</span><span>Formato</span><span>Datos</span>
+    </div>
+    <div class="toolbar-main">
+      <div class="toolbar-title">
+        <div class="sheet-icon">N</div>
+        <span class="full">nata.dev — Portfolio</span>
+      </div>
+      <div class="toolbar-right">
+        <div class="toolbar-saved"><span class="dot"></span>Guardado</div>
+        <a href="#contacto" class="toolbar-share">Compartir</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- COLUMN HEADER STRIP -->
+  <div class="colhead">
+    <span>A</span><span>B</span><span>C</span><span>D</span><span>E</span><span>F</span>
+  </div>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="row-gutter">
+      <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span>
+    </div>
+    <div class="hero-main">
+
+      <div class="formula-bar">
+        <div class="formula-cellref">A1</div>
+        <div class="formula-fx">fx</div>
+        <div class="formula-input">="Tus datos, trabajando para vos."<span class="blink-caret"></span></div>
+      </div>
+
+      <div class="hero-tag">Data Analyst &amp; Automation Specialist</div>
+
+      <h1>Tus datos<br/><em>trabajando</em><br/>para vos.</h1>
+
+      <p class="hero-sub">
+        Transformo datos en dashboards accionables, automatizo reportes
+        manuales y construyo sistemas de métricas que ayudan a PYMEs
+        a tomar mejores decisiones, más rápido.
+      </p>
+
+      <div class="hero-cta">
+        <a href="#contacto" class="btn btn-primary">Hablemos →</a>
+        <a href="#proyectos" class="btn btn-ghost">Ver proyectos</a>
+      </div>
+
+      <div class="stats-bar reveal">
+        <div class="stat">
+          <div class="stat-num">6<span>+</span></div>
+          <div class="stat-label">Años de experiencia</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num">20<span>+</span></div>
+          <div class="stat-label">Dashboards entregados</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num">80<span>%</span></div>
+          <div class="stat-label">Menos tiempo en reportes</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num">3<span>días</span></div>
+          <div class="stat-label">Tiempo promedio de entrega</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- SERVICIOS -->
+  <section id="servicios">
+    <div class="section-tag">Rango: Servicios</div>
+    <h2 class="section-title reveal">Lo que puedo<br/>hacer por tu negocio</h2>
+    <p class="section-sub reveal">Soluciones concretas, sin costo fijo mensual innecesario. Pagás por lo que necesitás.</p>
+
+    <div class="services-table-wrap reveal">
+      <table class="services-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Servicio</th>
+            <th>Descripción</th>
+            <th>Precio</th>
+            <th>Entrega</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="svc-row-num">1</td>
+            <td>
+              <span class="svc-icon">📊</span><span class="svc-name">Dashboard Profesional</span>
+              <ul class="svc-features">
+                <li>Conexión a tus fuentes de datos</li>
+                <li>Diseño adaptado a tu marca</li>
+                <li>Capacitación incluida</li>
+              </ul>
+            </td>
+            <td class="svc-desc">Un panel interactivo hecho a medida en Power BI o Google Sheets que te muestra lo que importa, en tiempo real.</td>
+            <td class="svc-price">$150 – $250<small>USD / proyecto</small></td>
+            <td class="svc-delivery">3–5 días</td>
+          </tr>
+          <tr>
+            <td class="svc-row-num">2</td>
+            <td>
+              <span class="svc-icon">⚡</span><span class="svc-name">Automatización de Reportes</span>
+              <ul class="svc-features">
+                <li>Power Query / Apps Script</li>
+                <li>Alertas automáticas por email</li>
+                <li>Documentación completa</li>
+              </ul>
+            </td>
+            <td class="svc-desc">Convertí horas de trabajo manual en un proceso que corre solo. Reportes que se actualizan cada día.</td>
+            <td class="svc-price">$200 – $400<small>USD / proyecto</small></td>
+            <td class="svc-delivery">A convenir</td>
+          </tr>
+          <tr>
+            <td class="svc-row-num">3</td>
+            <td>
+              <span class="svc-icon">🔄</span><span class="svc-name">Soporte Mensual</span>
+              <ul class="svc-features">
+                <li>Actualizaciones y nuevas métricas</li>
+                <li>Soporte vía Meet / Email</li>
+                <li>Prioridad en nuevos proyectos</li>
+              </ul>
+            </td>
+            <td class="svc-desc">Mantenimiento y evolución de tus dashboards y reportes. Tu analista de datos, sin contratar en blanco.</td>
+            <td class="svc-price">$150 – $300<small>USD / mes</small></td>
+            <td class="svc-delivery">Mensual</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- STACK -->
+  <section id="stack">
+    <div class="section-tag">Rango: Tecnología</div>
+    <h2 class="section-title reveal">Herramientas<br/>que domino</h2>
+    <p class="section-sub reveal">Stack probado en entornos empresariales reales, no solo cursos.</p>
+
+    <div class="skills-grid reveal">
+      <div class="skill-pill"><span class="dot"></span> Power BI</div>
+      <div class="skill-pill"><span class="dot"></span> Power Query</div>
+      <div class="skill-pill"><span class="dot"></span> Excel Avanzado</div>
+      <div class="skill-pill"><span class="dot"></span> Google Sheets</div>
+      <div class="skill-pill"><span class="dot"></span> Apps Script</div>
+      <div class="skill-pill"><span class="dot"></span> DAX</div>
+      <div class="skill-pill"><span class="dot"></span> M Language</div>
+      <div class="skill-pill"><span class="dot"></span> KPI Design</div>
+      <div class="skill-pill"><span class="dot"></span> SQL básico</div>
+      <div class="skill-pill"><span class="dot"></span> Looker Studio</div>
+      <div class="skill-pill"><span class="dot"></span> Análisis de Calidad</div>
+      <div class="skill-pill"><span class="dot"></span> Procesos Logísticos</div>
+      <div class="skill-pill"><span class="dot"></span> Customer Experience</div>
+      <div class="skill-pill"><span class="dot"></span> Invgate</div>
+    </div>
+  </section>
+
+  <!-- DASHBOARD SHOWCASE -->
+  <section id="dashboards">
+    <div class="section-tag">Rango: Muestra en vivo</div>
+    <h2 class="section-title reveal">Dashboards<br/>que entrego</h2>
+    <p class="section-sub reveal">Ejemplos interactivos del tipo de paneles que construyo. Datos anonimizados.</p>
+
+    <div class="reveal" id="dashShowcase">
+      <div class="dash-tabs">
+        <div class="dash-tab active" data-tab="ventas">📊 Ventas &amp; Stock</div>
+        <div class="dash-tab" data-tab="logistica">🚚 Logística</div>
+        <div class="dash-tab" data-tab="calidad">✅ Calidad &amp; NPS</div>
+      </div>
+
+      <div class="dash-window">
+        <div class="dash-titlebar">
+          <div class="dash-titlebar-left">
+            <span class="dash-fx">fx</span>
+            <span class="dash-title-text" id="dashFileName">ventas_retail_2025.pbix — Power BI</span>
+          </div>
+          <div class="dash-titlebar-right">Datos anonimizados · Solo demo</div>
+        </div>
+
+        <!-- PANEL 1: VENTAS -->
+        <div class="dash-panel active" id="panel-ventas">
+          <div class="kpi-row">
+            <div class="kpi-card green-accent">
+              <div class="kpi-label">Ventas del Mes</div>
+              <div class="kpi-value green" data-count="1847200" data-prefix="$" data-suffix="k">$0k</div>
+              <div class="kpi-delta up">↑ 12.4% vs mes anterior</div>
+            </div>
+            <div class="kpi-card blue-accent">
+              <div class="kpi-label">Unidades Vendidas</div>
+              <div class="kpi-value blue" data-count="4382">0</div>
+              <div class="kpi-delta up">↑ 8.1% vs mes anterior</div>
+            </div>
+            <div class="kpi-card orange-accent">
+              <div class="kpi-label">Stock Crítico</div>
+              <div class="kpi-value orange" data-count="17">0</div>
+              <div class="kpi-delta down">↓ 3 SKUs en alerta</div>
+            </div>
+            <div class="kpi-card purple-accent">
+              <div class="kpi-label">Ticket Promedio</div>
+              <div class="kpi-value purple" data-count="421" data-prefix="$">$0</div>
+              <div class="kpi-delta up">↑ 4.2% vs mes anterior</div>
+            </div>
+          </div>
+
+          <div class="chart-row main-side">
+            <div class="chart-box">
+              <div class="chart-box-title">Ventas por Semana — Comparativo 2024 vs 2025</div>
+              <div class="line-chart-wrap">
+                <svg id="lineVentas" viewBox="0 0 500 110" preserveAspectRatio="none">
+                  <defs>
+                    <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="#0B7A4B" stop-opacity="0.3"/>
+                      <stop offset="100%" stop-color="#0B7A4B" stop-opacity="0"/>
+                    </linearGradient>
+                    <linearGradient id="areaGrad2" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="#1857C6" stop-opacity="0.2"/>
+                      <stop offset="100%" stop-color="#1857C6" stop-opacity="0"/>
+                    </linearGradient>
+                  </defs>
+                  <line x1="0" y1="27" x2="500" y2="27" stroke="#D9DDD3" stroke-width="1"/>
+                  <line x1="0" y1="55" x2="500" y2="55" stroke="#D9DDD3" stroke-width="1"/>
+                  <line x1="0" y1="83" x2="500" y2="83" stroke="#D9DDD3" stroke-width="1"/>
+                  <path class="line-area" d="M0,82 C40,75 80,68 120,72 C160,76 200,60 240,58 C280,56 320,50 360,48 C400,46 440,52 500,45 L500,110 L0,110 Z" fill="url(#areaGrad2)"/>
+                  <path class="line-area" d="M0,75 C40,65 80,55 120,58 C160,61 200,42 240,38 C280,34 320,28 360,22 C400,16 440,20 500,12 L500,110 L0,110 Z" fill="url(#areaGrad)"/>
+                  <path class="line-path blue" d="M0,82 C40,75 80,68 120,72 C160,76 200,60 240,58 C280,56 320,50 360,48 C400,46 440,52 500,45"/>
+                  <path class="line-path" d="M0,75 C40,65 80,55 120,58 C160,61 200,42 240,38 C280,34 320,28 360,22 C400,16 440,20 500,12"/>
+                  <circle cx="120" cy="58" r="3" fill="#0B7A4B"/>
+                  <circle cx="240" cy="38" r="3" fill="#0B7A4B"/>
+                  <circle cx="360" cy="22" r="3" fill="#0B7A4B"/>
+                  <circle cx="500" cy="12" r="3" fill="#0B7A4B"/>
+                </svg>
+              </div>
+              <div style="display:flex;gap:1.2rem;margin-top:0.6rem">
+                <div class="legend-item"><div class="legend-dot" style="background:var(--positive)"></div>2025</div>
+                <div class="legend-item"><div class="legend-dot" style="background:var(--formula)"></div>2024</div>
+              </div>
+            </div>
+
+            <div class="chart-box">
+              <div class="chart-box-title">Ventas por Sucursal</div>
+              <div class="bar-chart">
+                <div class="bar-group"><div class="bar-fill primary" style="height:88px;transition-delay:0.05s"></div><div class="bar-label">SUC-1</div></div>
+                <div class="bar-group"><div class="bar-fill secondary" style="height:62px;transition-delay:0.1s"></div><div class="bar-label">SUC-2</div></div>
+                <div class="bar-group"><div class="bar-fill primary" style="height:75px;transition-delay:0.15s"></div><div class="bar-label">SUC-3</div></div>
+                <div class="bar-group"><div class="bar-fill tertiary" style="height:44px;transition-delay:0.2s"></div><div class="bar-label">SUC-4</div></div>
+                <div class="bar-group"><div class="bar-fill secondary" style="height:55px;transition-delay:0.25s"></div><div class="bar-label">SUC-5</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PANEL 2: LOGÍSTICA -->
+        <div class="dash-panel" id="panel-logistica">
+          <div class="kpi-row">
+            <div class="kpi-card green-accent">
+              <div class="kpi-label">Entregas del Día</div>
+              <div class="kpi-value green" data-count="342">0</div>
+              <div class="kpi-delta up">↑ 98.2% en tiempo</div>
+            </div>
+            <div class="kpi-card blue-accent">
+              <div class="kpi-label">En Tránsito</div>
+              <div class="kpi-value blue" data-count="89">0</div>
+              <div class="kpi-delta">→ Sin novedad</div>
+            </div>
+            <div class="kpi-card orange-accent">
+              <div class="kpi-label">Con Demora</div>
+              <div class="kpi-value orange" data-count="6">0</div>
+              <div class="kpi-delta down">↑ 2 vs ayer</div>
+            </div>
+            <div class="kpi-card purple-accent">
+              <div class="kpi-label">Tiempo Promedio</div>
+              <div class="kpi-value purple" data-count="2" data-suffix="h 18m">0</div>
+              <div class="kpi-delta up">↓ 14% vs semana pasada</div>
+            </div>
+          </div>
+
+          <div class="chart-row two-col">
+            <div class="chart-box">
+              <div class="chart-box-title">Entregas por Zona — Hoy</div>
+              <div class="hbar-list">
+                <div class="hbar-item">
+                  <div class="hbar-header"><span>Zona Norte</span><span>128 entregas</span></div>
+                  <div class="hbar-track"><div class="hbar-fill primary" style="--target-w:85%;background:var(--positive)"></div></div>
+                </div>
+                <div class="hbar-item">
+                  <div class="hbar-header"><span>Zona Sur</span><span>94 entregas</span></div>
+                  <div class="hbar-track"><div class="hbar-fill" style="--target-w:62%;background:var(--formula);transition-delay:0.1s"></div></div>
+                </div>
+                <div class="hbar-item">
+                  <div class="hbar-header"><span>Zona Centro</span><span>76 entregas</span></div>
+                  <div class="hbar-track"><div class="hbar-fill" style="--target-w:50%;background:var(--flag);transition-delay:0.2s"></div></div>
+                </div>
+                <div class="hbar-item">
+                  <div class="hbar-header"><span>Zona Oeste</span><span>44 entregas</span></div>
+                  <div class="hbar-track"><div class="hbar-fill" style="--target-w:29%;background:var(--purple);transition-delay:0.3s"></div></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="chart-box">
+              <div class="chart-box-title">Estado de Envíos — Últimas 24h</div>
+              <table class="mini-table">
+                <thead><tr><th>ID</th><th>Destino</th><th>Estado</th></tr></thead>
+                <tbody>
+                  <tr><td style="color:var(--ink)">#A-0041</td><td>Palermo</td><td><span class="badge ok">Entregado</span></td></tr>
+                  <tr><td style="color:var(--ink)">#A-0042</td><td>Caballito</td><td><span class="badge ok">Entregado</span></td></tr>
+                  <tr><td style="color:var(--ink)">#A-0043</td><td>Flores</td><td><span class="badge warn">En tránsito</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- PANEL 3: CALIDAD -->
+        <div class="dash-panel" id="panel-calidad">
+          <div class="kpi-row">
+            <div class="kpi-card green-accent">
+              <div class="kpi-label">NPS Score</div>
+              <div class="kpi-value green" data-count="72">0</div>
+              <div class="kpi-delta up">↑ +8 pts vs Q anterior</div>
+            </div>
+            <div class="kpi-card blue-accent">
+              <div class="kpi-label">CSAT Promedio</div>
+              <div class="kpi-value blue" data-count="4" data-suffix=".6 / 5">0</div>
+              <div class="kpi-delta up">↑ 0.3 vs mes anterior</div>
+            </div>
+            <div class="kpi-card orange-accent">
+              <div class="kpi-label">Tickets Resueltos</div>
+              <div class="kpi-value orange" data-count="1284">0</div>
+              <div class="kpi-delta">→ 97.4% dentro del SLA</div>
+            </div>
+            <div class="kpi-card purple-accent">
+              <div class="kpi-label">Tiempo Resp. Promedio</div>
+              <div class="kpi-value purple" data-count="3" data-suffix="h 40m">0</div>
+              <div class="kpi-delta up">↓ 22% vs mes anterior</div>
+            </div>
+          </div>
+
+          <div class="chart-row two-col">
+            <div class="chart-box">
+              <div class="chart-box-title">Evolución NPS — Últimos 6 Meses</div>
+              <div class="line-chart-wrap">
+                <svg id="lineNPS" viewBox="0 0 500 110" preserveAspectRatio="none">
+                  <line x1="0" y1="27" x2="500" y2="27" stroke="#D9DDD3" stroke-width="1"/>
+                  <line x1="0" y1="55" x2="500" y2="55" stroke="#D9DDD3" stroke-width="1"/>
+                  <line x1="0" y1="83" x2="500" y2="83" stroke="#D9DDD3" stroke-width="1"/>
+                  <path class="line-area" d="M0,90 C80,80 160,65 240,55 C320,45 400,32 500,18 L500,110 L0,110 Z" fill="url(#areaGrad)"/>
+                  <path class="line-path" d="M0,90 C80,80 160,65 240,55 C320,45 400,32 500,18"/>
+                  <circle cx="0"   cy="90" r="3.5" fill="#0B7A4B"/>
+                  <circle cx="100" cy="78" r="3.5" fill="#0B7A4B"/>
+                  <circle cx="200" cy="62" r="3.5" fill="#0B7A4B"/>
+                  <circle cx="300" cy="48" r="3.5" fill="#0B7A4B"/>
+                  <circle cx="400" cy="32" r="3.5" fill="#0B7A4B"/>
+                  <circle cx="500" cy="18" r="3.5" fill="#0B7A4B"/>
+                  <text x="0"   y="108" font-size="9" fill="#8C978A" font-family="monospace">Nov</text>
+                  <text x="90"  y="108" font-size="9" fill="#8C978A" font-family="monospace">Dic</text>
+                  <text x="190" y="108" font-size="9" fill="#8C978A" font-family="monospace">Ene</text>
+                  <text x="290" y="108" font-size="9" fill="#8C978A" font-family="monospace">Feb</text>
+                  <text x="390" y="108" font-size="9" fill="#8C978A" font-family="monospace">Mar</text>
+                  <text x="480" y="108" font-size="9" fill="#8C978A" font-family="monospace">Abr</text>
+                </svg>
+              </div>
+            </div>
+
+            <div class="chart-box" style="display:flex;flex-direction:column;justify-content:space-between">
+              <div class="chart-box-title">Distribución de Respuestas NPS</div>
+              <div class="donut-wrap">
+                <svg class="donut-svg" width="90" height="90" viewBox="0 0 90 90">
+                  <circle class="donut-circle-bg" cx="45" cy="45" r="35"/>
+                  <circle class="donut-circle" cx="45" cy="45" r="35" stroke="var(--positive)" style="--target-offset: 68"/>
+                </svg>
+                <div class="donut-legend">
+                  <div class="legend-item"><div class="legend-dot" style="background:var(--positive)"></div>Promotores <strong style="color:var(--ink);margin-left:4px">73%</strong></div>
+                  <div class="legend-item"><div class="legend-dot" style="background:var(--formula)"></div>Pasivos <strong style="color:var(--ink);margin-left:4px">18%</strong></div>
+                  <div class="legend-item"><div class="legend-dot" style="background:var(--danger)"></div>Detractores <strong style="color:var(--ink);margin-left:4px">9%</strong></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- PROYECTOS -->
+  <section id="proyectos">
+    <div class="section-tag">Rango: Proyectos</div>
+    <h2 class="section-title reveal">Casos de uso<br/>reales</h2>
+    <p class="section-sub reveal">Ejemplos del tipo de trabajo que entrego. Los datos están anonimizados.</p>
+
+    <div class="projects-grid reveal">
+
+      <a href="pulso-economico.html" target="_blank" rel="noopener" class="project-card project-card--featured">
+        <div class="project-live-badge"><span class="project-live-dot"></span>Demo en vivo</div>
+        <div class="project-range">Rango: B4:F22</div>
+        <div class="project-title">Pulso Económico Argentino<span class="project-arrow">↗</span></div>
+        <p class="project-desc">
+          Panel de indicadores macro (inflación, dólar oficial/blue, riesgo país,
+          reservas BCRA) con datos reales de INDEC y BCRA. KPIs animados,
+          gráficos dinámicos y filtro por período — hecho desde cero en React.
+        </p>
+        <div class="project-tags">
+          <span class="project-tag">React</span>
+          <span class="project-tag">Recharts</span>
+          <span class="project-tag">INDEC / BCRA</span>
+        </div>
+      </a>
+
+      <div class="project-card">
+        <div class="project-range">Rango: Retail</div>
+        <div class="project-title">Control de Ventas y Stock</div>
+        <p class="project-desc">
+          Dashboard en Power BI para cadena de retail con 5 sucursales.
+          Visualización de ventas diarias, rotación de stock y alertas
+          de quiebre de inventario en tiempo real.
+        </p>
+        <div class="project-tags">
+          <span class="project-tag">Power BI</span>
+          <span class="project-tag">DAX</span>
+          <span class="project-tag">Excel</span>
+        </div>
+      </div>
+
+      <div class="project-card">
+        <div class="project-range">Rango: Logística</div>
+        <div class="project-title">Reporte Diario de Entregas</div>
+        <p class="project-desc">
+          Automatización de reporte de estado de envíos que antes tomaba
+          2 horas manuales. Ahora se genera solo en 3 minutos con
+          alertas automáticas para el equipo operativo.
+        </p>
+        <div class="project-tags">
+          <span class="project-tag">Power Query</span>
+          <span class="project-tag">Excel</span>
+          <span class="project-tag">Outlook</span>
+        </div>
+      </div>
+
+      <div class="project-card">
+        <div class="project-range">Rango: Servicios</div>
+        <div class="project-title">Dashboard de Calidad y NPS</div>
+        <p class="project-desc">
+          Sistema de seguimiento de indicadores de calidad y satisfacción
+          del cliente. Métricas de NPS, tiempos de respuesta y evolución
+          mensual para equipo de Customer Experience.
+        </p>
+        <div class="project-tags">
+          <span class="project-tag">Google Sheets</span>
+          <span class="project-tag">Looker Studio</span>
+          <span class="project-tag">Apps Script</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- PROCESO -->
+  <section id="proceso">
+    <div class="section-tag">Rango: Cómo trabajo</div>
+    <h2 class="section-title reveal">Simple, claro<br/>y sin sorpresas</h2>
+    <p class="section-sub reveal">Un proceso de 4 pasos pensado para que vos no tengas que preocuparte por nada técnico.</p>
+
+    <div class="process-list reveal">
+      <div class="process-item">
+        <div class="process-rownum">1</div>
+        <div class="process-body">
+          <div class="process-title">Diagnóstico gratuito</div>
+          <p class="process-desc">Hablamos 30 minutos. Me contás el problema, yo te digo si puedo resolverlo y cómo. Sin compromiso.</p>
+        </div>
+      </div>
+      <div class="process-item">
+        <div class="process-rownum">2</div>
+        <div class="process-body">
+          <div class="process-title">Propuesta clara</div>
+          <p class="process-desc">Precio fijo, alcance exacto y plazo de entrega. Sin letras chicas ni costos ocultos.</p>
+        </div>
+      </div>
+      <div class="process-item">
+        <div class="process-rownum">3</div>
+        <div class="process-body">
+          <div class="process-title">Desarrollo con feedback</div>
+          <p class="process-desc">Trabajo con actualizaciones intermedias para que puedas ver el avance y pedir ajustes antes de la entrega final.</p>
+        </div>
+      </div>
+      <div class="process-item">
+        <div class="process-rownum">4</div>
+        <div class="process-body">
+          <div class="process-title">Entrega + capacitación</div>
+          <p class="process-desc">Te entrego todo funcionando y te enseño a usarlo. No necesitás depender de mí para el día a día.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACTO -->
+  <section id="contacto">
+    <div class="contact-box">
+      <div class="section-tag" style="justify-content:center">Rango: Contacto</div>
+      <h2 class="section-title reveal">¿Tu negocio necesita<br/>mejores datos?</h2>
+      <p class="section-sub reveal" style="margin:1rem auto 0">
+        Empezamos con una charla de 30 minutos sin costo. Si no encuentro
+        la forma de ayudarte, te lo digo directamente.
+      </p>
+
+      <a href="mailto:natanaeljon@gmail.com" class="contact-email reveal">✉ natanaeljon@gmail.com</a>
+
+      <div class="social-links reveal">
+        <a href="https://www.linkedin.com/in/natanaeldemarco" target="_blank" class="social-link">↗ LinkedIn</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <span>© 2026 Natanael · Data &amp; Automation</span>
+    <span>Buenos Aires, Argentina 🇦🇷</span>
+  </footer>
+
+  <!-- SHEET TABS (bottom nav) -->
+  <nav class="sheet-tabs">
+    <a href="#servicios" class="sheet-tab">Servicios</a>
+    <a href="#stack" class="sheet-tab">Stack</a>
+    <a href="#dashboards" class="sheet-tab">Dashboards</a>
+    <a href="#proyectos" class="sheet-tab">Proyectos</a>
+    <a href="#proceso" class="sheet-tab">Proceso</a>
+    <a href="#contacto" class="sheet-tab">Contacto</a>
+    <a href="#contacto" class="sheet-tab add">+</a>
+  </nav>
+
+  <script>
+    /* Scroll reveal */
+    const reveals = document.querySelectorAll('.reveal');
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach((e, i) => {
+        if (e.isIntersecting) {
+          setTimeout(() => e.target.classList.add('visible'), i * 80);
+          obs.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.1 });
+    reveals.forEach(el => obs.observe(el));
+
+    /* Stat counter */
+    function animateCount(el, target, suffix) {
+      let count = 0;
+      const step = Math.ceil(target / 40);
+      const interval = setInterval(() => {
+        count = Math.min(count + step, target);
+        el.textContent = count + suffix;
+        if (count >= target) clearInterval(interval);
+      }, 30);
+    }
+
+    const statsObs = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) {
+        document.querySelectorAll('.stat-num').forEach(el => {
+          const text = el.textContent;
+          const num = parseInt(text);
+          const suffix = text.replace(/[0-9]/g, '');
+          el.innerHTML = '0' + suffix.replace(/([^<]*)(<span>.*<\/span>)/, '$2');
+          animateCount(el.firstChild || el, num, '');
+        });
+        statsObs.disconnect();
+      }
+    }, { threshold: 0.5 });
+
+    const statsBar = document.querySelector('.stats-bar');
+    if (statsBar) statsObs.observe(statsBar);
+
+    /* Dashboard KPI counter */
+    function animateKPIs(panel) {
+      panel.querySelectorAll('[data-count]').forEach(el => {
+        const target  = parseInt(el.dataset.count);
+        const prefix  = el.dataset.prefix  || '';
+        const suffix  = el.dataset.suffix  || '';
+        let current   = 0;
+        const steps   = 50;
+        const inc     = target / steps;
+        const interval = setInterval(() => {
+          current = Math.min(current + inc, target);
+          const display = target > 999
+            ? (current / 1000).toFixed(0) + 'k'
+            : Math.round(current).toString();
+          el.textContent = prefix + display + suffix;
+          if (current >= target) clearInterval(interval);
+        }, 24);
+      });
+    }
+
+    const fileNames = {
+      ventas:   'ventas_retail_2025.pbix — Power BI',
+      logistica:'logistica_entregas_2025.xlsx — Power Query',
+      calidad:  'calidad_NPS_2025.pbix — Looker Studio'
+    };
+
+    let activeTab = 'ventas';
+    let dashTriggered = { ventas: false, logistica: false, calidad: false };
+
+    function activatePanel(name) {
+      document.querySelectorAll('.dash-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.dash-panel').forEach(p => p.classList.remove('active'));
+      document.querySelector(`[data-tab="${name}"]`).classList.add('active');
+      const panel = document.getElementById(`panel-${name}`);
+      panel.classList.add('active');
+      document.getElementById('dashFileName').textContent = fileNames[name];
+      if (!dashTriggered[name]) {
+        dashTriggered[name] = true;
+        setTimeout(() => animateKPIs(panel), 80);
+      }
+      activeTab = name;
+    }
+
+    document.querySelectorAll('.dash-tab').forEach(tab => {
+      tab.addEventListener('click', () => activatePanel(tab.dataset.tab));
+    });
+
+    const dashObs = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) {
+        if (!dashTriggered[activeTab]) {
+          dashTriggered[activeTab] = true;
+          setTimeout(() => animateKPIs(document.getElementById(`panel-${activeTab}`)), 200);
+        }
+        dashObs.disconnect();
+      }
+    }, { threshold: 0.2 });
+
+    const showcase = document.getElementById('dashShowcase');
+    if (showcase) dashObs.observe(showcase);
+  </script>
+
+</body>
+</html>
